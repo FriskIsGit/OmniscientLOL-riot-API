@@ -77,7 +77,7 @@ Maokai:57
 MasterYi:11
 Milio:902
 MissFortune:21
-MonkeyKing:62
+Wukong:62
 Mordekaiser:82
 Morgana:25
 Nami:267
