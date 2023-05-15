@@ -33,7 +33,7 @@ public class SummonerDTO{
     public static SummonerDTO getById(String id){
         if(id == null)
             return null;
-        return summonerPUUIDCache.get(id);
+        return summonerIDCache.get(id);
     }
 
     public static SummonerDTO fromJson(String json){
