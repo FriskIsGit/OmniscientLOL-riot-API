@@ -47,7 +47,10 @@ public class OPGG{
             //return Collections.emptyList();
         }
         int tiers = body.indexOf("<ul class=\"tier-list\"");
-        //int moreTiers = response.body.indexOf("<ul class=\"more-tier-list\"", tiers); // javascript click needed
+        int moreTiers = response.body.indexOf("<ul class=\"more-tier-list\"", tiers); // javascript click needed
+        if(moreTiers != -1){
+            System.out.println("More tiers are present in the html.");
+        }
         if(tiers == -1){
             System.err.println("There's no tier-list for user: " + name);
             return Collections.emptyList();
