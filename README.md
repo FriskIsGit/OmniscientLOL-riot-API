@@ -6,5 +6,6 @@ A normal RIOT API key expires every 24 hours, so if you get status_code 403, jus
 
 
 ![ranks](img/scoreboard.png)
+<br>
 See if the ranks are balanced or if all the odds are against ya. <br>
 Maybe there's a random challenger in your lobby but there shouldn't.
