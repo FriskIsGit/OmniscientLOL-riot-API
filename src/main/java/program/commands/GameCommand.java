@@ -1,4 +1,4 @@
-package program;
+package program.commands;
 
 import lol.Riot;
 import lol.apis.LeagueV4;
@@ -13,6 +13,9 @@ import lol.opgg.OPGG;
 import lol.opgg.RankEntry;
 import lol.ranks.LeagueRank;
 import lol.ranks.Queue;
+import program.structs.ElapsedTime;
+import program.structs.SummonerEntry;
+import program.structs.Teams;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -7,16 +7,13 @@ import lol.champions.Champions;
 import lol.dtos.LeagueEntryDTO;
 import lol.dtos.SummonerDTO;
 import lol.infos.ChampionInfo;
-import lol.infos.CurrentGameInfo;
-import lol.infos.CurrentGameParticipant;
 import lol.opgg.OPGG;
 import lol.opgg.RankEntry;
 import lol.ranks.LeagueRank;
 import lol.ranks.Queue;
+import program.commands.GameCommand;
 
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CLIProgram{
     private final Scanner scanner = new Scanner(System.in);

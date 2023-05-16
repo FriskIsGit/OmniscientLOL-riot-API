@@ -1,4 +1,4 @@
-package program;
+package program.structs;
 
 import lol.infos.CurrentGameParticipant;
 

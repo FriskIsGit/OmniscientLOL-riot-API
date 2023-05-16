@@ -1,4 +1,4 @@
-package program;
+package program.structs;
 
 public class ElapsedTime{
     //-+1 second precision
