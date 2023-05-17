@@ -20,12 +20,13 @@ public class ParticipantDTO{
             timeCCingOthers, timePlayed, totalDamageDealt, totalDamageDealtToChampions, totalDamageShieldedOnTeammates,
             totalDamageTaken, totalHeal, totalHealsOnTeammates, totalMinionsKilled, totalTimeCCDealt, totalTimeSpentDead,
             totalUnitsHealed, trueDamageDealt, trueDamageDealtToChampions, trueDamageTaken, turretKills, turretTakedowns,
-            turretsLost, visionScore, visionWardsBoughtInGame, wardsKilled, wardsPlaced;
-
+            turretsLost, visionScore, visionWardsBoughtInGame, wardsKilled, wardsPlaced, controlWardsPlaced;
+    public int allInPings, commandPings, dangerPings, enemyMissingPings, enemyVisionPings, getBackPings, holdPings;
     public boolean firstBloodAssist, firstBloodKill, firstTowerAssist, firstTowerKill,
             gameEndedInEarlySurrender, gameEndedInSurrender, teamEarlySurrendered, win;
     public String championName, individualPosition, lane, puuid, riotIdName, riotIdTagline, role,
             summonerId, summonerName, teamPosition;
+    public Challenges challenges;
 
     public static ParticipantDTO fromJson(JSONObject json){
         ParticipantDTO participant = new ParticipantDTO();
@@ -66,12 +67,27 @@ public class ParticipantDTO{
         participant.detectorWardsPlaced = json.getInteger("detectorWardsPlaced");
         participant.totalHeal = json.getInteger("totalHeal");
         participant.summonerLevel = json.getInteger("summonerLevel");
+        participant.totalMinionsKilled = json.getInteger("totalMinionsKilled");
+        participant.totalTimeCCDealt = json.getInteger("totalTimeCCDealt");
+        participant.wardsKilled = json.getInteger("wardsKilled");
+        participant.wardsPlaced = json.getInteger("wardsPlaced");
+        participant.trueDamageTaken = json.getInteger("trueDamageTaken");
+        participant.trueDamageDealt = json.getInteger("trueDamageDealt");
+        participant.trueDamageDealtToChampions = json.getInteger("trueDamageDealtToChampions");
 
         participant.pentaKills = json.getInteger("pentaKills");
         participant.quadraKills = json.getInteger("quadraKills");
         participant.tripleKills = json.getInteger("tripleKills");
         participant.doubleKills = json.getInteger("doubleKills");
         participant.unrealKills = json.getInteger("unrealKills");
+
+        participant.allInPings = json.getInteger("allInPings");
+        participant.commandPings = json.getInteger("commandPings");
+        participant.dangerPings = json.getInteger("dangerPings");
+        participant.enemyMissingPings = json.getInteger("enemyMissingPings");
+        participant.enemyVisionPings = json.getInteger("enemyVisionPings");
+        participant.getBackPings = json.getInteger("getBackPings");
+        participant.holdPings = json.getInteger("holdPings");
 
         participant.championName = json.getString("championName");
         participant.individualPosition = json.getString("individualPosition");
@@ -92,11 +108,84 @@ public class ParticipantDTO{
         participant.gameEndedInSurrender = json.getBoolean("gameEndedInSurrender");
         participant.teamEarlySurrendered = json.getBoolean("teamEarlySurrendered");
         participant.win = json.getBoolean("win");
+
+        participant.challenges = Challenges.from(json.getJSONObject("challenges"));
         return participant;
     }
     public static ParticipantDTO fromJson(String json){
         if(json == null)
             return null;
         return fromJson(JSONObject.parseObject(json));
+    }
+}
+
+class Challenges{
+    public int abilityUses, acesBefore15Minutes, alliedJungleMonsterKills, baronTakedowns, blastConeOppositeOpponentCount,
+            bountyGold, buffsStolen, completeSupportQuestInTime, dancedWithRiftHerald,
+            deathsByEnemyChamps, dodgeSkillShotsSmallWindow, doubleAces, dragonTakedowns,
+            earlyLaningPhaseGoldExpAdvantage, elderDragonKillsWithOpposingSoul, elderDragonMultikills,
+            enemyChampionImmobilizations, enemyJungleMonsterKills, epicMonsterKillsNearEnemyJungler,
+            epicMonsterKillsWithin30SecondsOfSpawn, epicMonsterSteals, epicMonsterStolenWithoutSmite, firstTurretKilled,
+            flawlessAces, fullTeamTakedown, getTakedownsInAllLanesEarlyJungleAsLaner, hadOpenNexus,
+            immobilizeAndKillWithAlly, initialBuffCount, initialCrabCount,
+            jungleCsBefore10Minutes, junglerTakedownsNearDamagedEpicMonster, kTurretsDestroyedBeforePlatesFall,
+            killAfterHiddenWithAlly, killedChampTookFullTeamDamageSurvived, killingSprees,
+            killsNearEnemyTurret, killsOnOtherLanesEarlyJungleAsLaner, killsOnRecentlyHealedByAramPack,
+            killsUnderOwnTurret, killsWithHelpFromEpicMonster, knockEnemyIntoTeamAndKill, landSkillShotsEarlyGame,
+            laneMinionsFirst10Minutes, laningPhaseGoldExpAdvantage, legendaryCount, lostAnInhibitor,
+            maxCsAdvantageOnLaneOpponent, maxKillDeficit, maxLevelLeadLaneOpponent, mejaisFullStackInTime,
+            moreEnemyJungleThanOpponent, multiKillOneSpell, multiTurretRiftHeraldCount, multikills,
+            multikillsAfterAggressiveFlash, mythicItemUsed, outerTurretExecutesBefore10Minutes, outnumberedKills,
+            outnumberedNexusKill, perfectDragonSoulsTaken, perfectGame, pickKillWithAlly, poroExplosions,
+            quickCleanse, quickFirstTurret, quickSoloKills, riftHeraldTakedowns, saveAllyFromDeath, scuttleCrabKills,
+            skillshotsDodged, skillshotsHit, snowballsHit, soloBaronKills, soloKills, stealthWardsPlaced,
+            survivedSingleDigitHpCount, survivedThreeImmobilizesInFight, takedownOnFirstTurret, takedowns,
+            takedownsAfterGainingLevelAdvantage, takedownsBeforeJungleMinionSpawn, takedownsFirstXMinutes,
+            takedownsInAlcove, takedownsInEnemyFountain, teamBaronKills, teamElderDragonKills, teamRiftHeraldKills,
+            threeWardsOneSweeperCount, tookLargeDamageSurvived, turretPlatesTaken, turretTakedowns,
+            turretsTakenWithRiftHerald, twentyMinionsIn3SecondsCount,
+            unseenRecalls, wardTakedowns, wardTakedownsBefore20M, wardsGuarded;
+    public double controlWardTimeCoverageInRiverOrEnemyHalf, damagePerMinute, damageTakenOnTeamPercentage,
+            effectiveHealAndShielding, gameLength, goldPerMinute, kda, killParticipation,
+            teamDamagePercentage, visionScoreAdvantageLaneOpponent, visionScorePerMinute;
+
+    public static Challenges from(JSONObject json){
+        if(json == null)
+            return null;
+        Challenges challenges = new Challenges();
+        challenges.abilityUses = json.getInteger("abilityUses");
+        challenges.acesBefore15Minutes = json.getInteger("acesBefore15Minutes");
+        challenges.alliedJungleMonsterKills = json.getInteger("alliedJungleMonsterKills");
+
+        challenges.epicMonsterSteals = json.getInteger("epicMonsterSteals");
+        challenges.dragonTakedowns = json.getInteger("dragonTakedowns");
+        challenges.laningPhaseGoldExpAdvantage = json.getInteger("laningPhaseGoldExpAdvantage");
+        challenges.immobilizeAndKillWithAlly = json.getInteger("immobilizeAndKillWithAlly");
+        challenges.knockEnemyIntoTeamAndKill = json.getInteger("knockEnemyIntoTeamAndKill");
+        challenges.jungleCsBefore10Minutes = json.getInteger("jungleCsBefore10Minutes");
+        challenges.turretTakedowns = json.getInteger("turretTakedowns");
+        challenges.maxCsAdvantageOnLaneOpponent = json.getInteger("maxCsAdvantageOnLaneOpponent");
+        challenges.saveAllyFromDeath = json.getInteger("saveAllyFromDeath");
+        challenges.mejaisFullStackInTime = json.getInteger("mejaisFullStackInTime");
+        challenges.perfectGame = json.getInteger("perfectGame");
+        challenges.soloKills = json.getInteger("soloKills");
+        challenges.skillshotsHit = json.getInteger("skillshotsHit");
+        challenges.skillshotsDodged = json.getInteger("skillshotsDodged");
+        challenges.turretPlatesTaken = json.getInteger("turretPlatesTaken");
+        challenges.unseenRecalls = json.getInteger("unseenRecalls");
+        challenges.wardTakedowns = json.getInteger("wardTakedowns");
+        challenges.wardsGuarded = json.getInteger("wardsGuarded");
+
+        challenges.damagePerMinute = json.getDouble("damagePerMinute");
+        challenges.damageTakenOnTeamPercentage = json.getDouble("damageTakenOnTeamPercentage");
+        challenges.effectiveHealAndShielding = json.getDouble("effectiveHealAndShielding");
+        challenges.gameLength = json.getDouble("gameLength");
+        challenges.goldPerMinute = json.getDouble("goldPerMinute");
+        challenges.kda = json.getDouble("kda");
+        challenges.killParticipation = json.getDouble("killParticipation");
+        challenges.teamDamagePercentage = json.getDouble("teamDamagePercentage");
+        challenges.visionScoreAdvantageLaneOpponent = json.getDouble("visionScoreAdvantageLaneOpponent");
+        challenges.visionScorePerMinute = json.getDouble("visionScorePerMinute");
+        return challenges;
     }
 }

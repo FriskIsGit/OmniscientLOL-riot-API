@@ -57,6 +57,4 @@ public class InfoDTO{
         }
         return teams;
     }
-
-
 }

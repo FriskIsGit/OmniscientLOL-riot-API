@@ -45,8 +45,10 @@ public class GameCommand{
         rightTeam = getSummonerEntries(teams.rightTeam);
         complementTeamsRanks();
         String scoreboard = statsToPrettyString(summoner.id);
-        ElapsedTime elapsedTime = new ElapsedTime(System.currentTimeMillis() - gameInfo.gameStartTime);
-        System.out.println(elapsedTime);
+        if(gameInfo.gameStartTime != 0){
+            ElapsedTime elapsedTime = new ElapsedTime(System.currentTimeMillis() - gameInfo.gameStartTime);
+            System.out.println(elapsedTime);
+        }
         System.out.println(scoreboard);
     }
 

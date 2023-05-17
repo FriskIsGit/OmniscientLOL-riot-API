@@ -17,6 +17,8 @@ public class MetadataDTO{
     }
 
     public static MetadataDTO fromJson(JSONObject json){
+        if(json == null)
+            return null;
         MetadataDTO metadata = new MetadataDTO();
         metadata.dataVersion = json.getString("dataVersion");
         metadata.matchId = json.getString("matchId");

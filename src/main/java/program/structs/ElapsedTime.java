@@ -9,9 +9,6 @@ public class ElapsedTime{
         seconds = (int) (unixMillis / 1000);
         minutes = seconds / 60;
         seconds = seconds % 60;
-        if(minutes > 120){
-            System.err.println("Suspiciously high minutes for unix: " + unixMillis);
-        }
     }
 
     @Override

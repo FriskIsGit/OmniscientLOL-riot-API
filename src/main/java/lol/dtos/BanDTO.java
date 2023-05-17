@@ -6,6 +6,9 @@ public class BanDTO{
     public int championId, pickTurn;
 
     public static BanDTO fromJson(JSONObject json){
+        if(json == null)
+            return null;
+
         BanDTO ban = new BanDTO();
         ban.championId = json.getInteger("championId");
         ban.pickTurn = json.getInteger("pickTurn");

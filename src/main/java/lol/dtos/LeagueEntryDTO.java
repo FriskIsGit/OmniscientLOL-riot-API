@@ -10,6 +10,9 @@ public class LeagueEntryDTO{
     public MiniSeriesDTO miniseries;
 
     public static LeagueEntryDTO fromJson(JSONObject json){
+        if(json == null)
+            return null;
+
         LeagueEntryDTO leagueEntry = new LeagueEntryDTO();
         leagueEntry.leagueId = json.getString("leagueId");
         leagueEntry.summonerId = json.getString("summonerId");

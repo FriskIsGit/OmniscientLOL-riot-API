@@ -12,6 +12,7 @@ import lol.opgg.RankEntry;
 import lol.ranks.LeagueRank;
 import lol.ranks.Queue;
 import program.commands.GameCommand;
+import program.commands.MatchCommand;
 
 import java.util.*;
 
@@ -25,7 +26,7 @@ public class CLIProgram{
             String[] split = input.split(" ");
             split = new String[]{split[0], merge(split, 1)};
             System.out.println(Arrays.toString(split));
-            switch (split[0]){
+            switch (split[0].toLowerCase()){
                 case "g":
                 case "game":
                     if(split[1].isEmpty()){
@@ -49,9 +50,20 @@ public class CLIProgram{
                     }
                     fetchPlayerRank(split[1]);
                     break;
-                case "rotation":
-                    String[] names = fetchChampionNames();
-                    System.out.println(Arrays.toString(names));
+                case "matches":
+                    if(split[1].isEmpty()){
+                        System.err.println("Missing name argument");
+                        continue;
+                    }
+                    MatchCommand.fetchMatches(split[1]);
+                    break;
+                case "match":
+                case "m":
+                    if(split[1].isEmpty()){
+                        System.err.println("Missing matchId argument");
+                        continue;
+                    }
+                    MatchCommand.fetchMatch(split[1]);
                     break;
                 default:
             }
@@ -124,7 +136,7 @@ public class CLIProgram{
 
     public void printCommands(){
         System.out.print("Available commands: ");
-        String[] commands = {"game", "player", "region", "rotation"};
+        String[] commands = {"game", "player", "match", "region", "matches"};
         System.out.println(Arrays.toString(commands));
     }
 }
