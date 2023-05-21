@@ -5,6 +5,7 @@ import lol.apis.LeagueV4;
 import lol.apis.SpectatorV4;
 import lol.apis.SummonerV4;
 import lol.champions.Champions;
+import lol.champions.Role;
 import lol.dtos.LeagueEntryDTO;
 import lol.dtos.SummonerDTO;
 import lol.infos.CurrentGameInfo;
@@ -13,20 +14,25 @@ import lol.opgg.OPGG;
 import lol.opgg.RankEntry;
 import lol.ranks.LeagueRank;
 import lol.ranks.Queue;
+import lol.spells.Spell;
 import program.structs.ElapsedTime;
 import program.structs.SummonerEntry;
 import program.structs.Teams;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameCommand{
+    private CurrentGameInfo gameInfo;
     private SummonerEntry[] leftTeam;
     private SummonerEntry[] rightTeam;
 
     private GameCommand(){
+    }
+
+    public static void fetchGame(String playerName){
+        new GameCommand().fetchGameImpl(playerName);
     }
 
     //pretty prints scoreboard
@@ -35,7 +41,7 @@ public class GameCommand{
         if(summoner == null)
             return;
 
-        CurrentGameInfo gameInfo = SpectatorV4.queryGame(Riot.REGION, summoner);
+        gameInfo = SpectatorV4.queryGame(Riot.REGION, summoner);
         if(gameInfo == null){
             System.err.println("Likely the game is over by now or it's a clash game");
             return;
@@ -43,17 +49,127 @@ public class GameCommand{
         Teams teams = Teams.split(gameInfo.participants);
         leftTeam = getSummonerEntries(teams.leftTeam);
         rightTeam = getSummonerEntries(teams.rightTeam);
+        sortTeams();
         complementTeamsRanks();
-        String scoreboard = statsToPrettyString(summoner.id);
+        StringBuilder simpleGameInfo = new StringBuilder();
         if(gameInfo.gameStartTime != 0){
             ElapsedTime elapsedTime = new ElapsedTime(System.currentTimeMillis() - gameInfo.gameStartTime);
-            System.out.println(elapsedTime);
+            simpleGameInfo.append(elapsedTime).append(' ');
         }
+        simpleGameInfo.append(gameInfo.gameMode);
+        System.out.println(simpleGameInfo);
+        String scoreboard = statsToPrettyString(summoner.id);
         System.out.println(scoreboard);
     }
 
-    public static void fetchGame(String playerName){
-        new GameCommand().fetchGameImpl(playerName);
+    //attempts to sort teams by roles
+    private void sortTeams(){
+        if(gameInfo.gameMode.equals("ARAM")){
+            //don't sort since ARAM has no roles
+            return;
+        }
+        sortTeam(leftTeam);
+        sortTeam(rightTeam);
+    }
+    private void sortTeam(SummonerEntry[] summoners){
+        int len = summoners.length;
+        if(len != 5){
+            return;
+        }
+
+        Player[] players = new Player[5];
+        //convert champion names to ids
+        for (int i = 0; i < len; i++){
+            int champId = Champions.getChampionId(summoners[i].championName).expect("Unknown champion name");
+            players[i] = new Player(champId);
+        }
+
+        Role[] roles = {Role.TOP, Role.JUNGLE, Role.MID, Role.ADC, Role.SUPPORT};
+        boolean[] assignedRoles = new boolean[5];
+        for (int i = 0; i < len; i++){
+            SummonerEntry summoner = summoners[i];
+            if (summoner.spell1 == Spell.SMITE || summoner.spell2 == Spell.SMITE){
+                players[i].assignedRole = Role.JUNGLE;
+                assignedRoles[1] = true;
+                break;
+            }
+        }
+
+        //assign single-role champions first, for more probability
+        for (int i = 0; i < 5; i++){
+            if(assignedRoles[i]){
+                continue;
+            }
+            Role targetRole = roles[i];
+            //iterate over players
+            for (int j = 0; j < 5; j++){
+                if(players[j].hasRole()){
+                    continue;
+                }
+                Role[] champRoles = Champions.rolesOf(players[j].championId);
+                if(champRoles.length != 1){
+                    continue;
+                }
+                if (champRoles[0] == targetRole){
+                    players[j].assignedRole = targetRole;
+                    assignedRoles[i] = true;
+                    break;
+                }
+            }
+        }
+
+        //assign many-role champions
+        for (int i = 0; i < 5; i++){
+            if(assignedRoles[i]){
+                continue;
+            }
+            Role targetRole = roles[i];
+            //iterate over players
+            for (int j = 0; j < 5; j++){
+                if(players[j].hasRole()){
+                    continue;
+                }
+                if(Champions.playsRole(players[j].championId, targetRole)){
+                    players[j].assignedRole = targetRole;
+                    assignedRoles[i] = true;
+                    break;
+                }
+            }
+        }
+
+        SummonerEntry[] summonersCopy = new SummonerEntry[len];
+        System.arraycopy(summoners, 0, summonersCopy, 0, len);
+
+        for (int i = 0; i < 5; i++){
+            Player player = players[i];
+            if(player.hasRole()){
+                switch (player.assignedRole){
+                    case TOP:
+                        summoners[0] = summonersCopy[i];
+                        break;
+                    case JUNGLE:
+                        summoners[1] = summonersCopy[i];
+                        break;
+                    case MID:
+                        summoners[2] = summonersCopy[i];
+                        break;
+                    case ADC:
+                        summoners[3] = summonersCopy[i];
+                        break;
+                    case SUPPORT:
+                        summoners[4] = summonersCopy[i];
+                        break;
+                }
+            }else{
+                // go over unassigned roles and fill the gaps
+                for (int j = 0; j < 5; j++){
+                    if(!assignedRoles[j]){
+                        summoners[j] = summonersCopy[i];
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private void complementTeamsRanks(){
@@ -243,9 +359,30 @@ public class GameCommand{
                     );
                 }
             }
-            SummonerEntry summonerEntry = new SummonerEntry(participant.summonerId, champName, duoRank, flexRank);
+            Spell spell1 = Spell.from(participant.spell1Id);
+            Spell spell2 = Spell.from(participant.spell2Id);
+            SummonerEntry summonerEntry = new SummonerEntry(participant.summonerId, champName, duoRank, flexRank, spell1, spell2);
             team[i] = summonerEntry;
         }
         return team;
+    }
+}
+
+
+class Player{
+    public int championId;
+    public Role assignedRole;
+
+    public Player(int championId){
+        this.championId = championId;
+    }
+
+    public boolean hasRole(){
+        return assignedRole != null;
+    }
+
+    @Override
+    public String toString(){
+        return "[" + championId + ", " + assignedRole + "]";
     }
 }

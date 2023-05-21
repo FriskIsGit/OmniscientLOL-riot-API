@@ -70,6 +70,13 @@ public class CLIProgram{
         }
     }
 
+    public void earlyInitialize(){
+        //loads static initializers (api key to not mess with the flow later)
+        try{
+            Class.forName("lol.Riot");
+        }catch (ClassNotFoundException ignored){}
+    }
+
     private void fetchPlayerRank(String summonerName){
         SummonerDTO summoner = SummonerV4.fetchPlayerByName(summonerName);
         if(summoner == null){

@@ -2,13 +2,22 @@ package lol;
 
 import org.apache.http.client.fluent.Request;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Riot{
     public static final String[] REGIONS = {
             "na1", "eun1", "euw1", "jp1", "kr", "la1", "la2",
             "br1", "oc1", "ph2", "ru", "sg2", "th2", "tr1", "tw2", "vn2"};
-    private static final String RIOT_API_KEY = "RGAPI-56f62acd-6df4-4005-9b9c-01506a99c586";
+    private static String RIOT_API_KEY = "RGAPI-d759fef1-a658-4701-a4e5-ad34417d5274";
     public static String REGION = "eun1";
 
+    static{
+        loadAPIKey();
+    }
     public static void setRegion(String region){
         boolean found = false;
         for(String reg : REGIONS){
@@ -41,34 +50,57 @@ public class Riot{
     public static Request newRequest(String endpoint){
         return newRequest(REGION, endpoint);
     }
-    public static void setRoutingRegion(){
-        switch (REGION){
+    public static String toRoutingRegion(String region){
+        switch (region){
             case "na1":
             case "br":
             case "la1":
             case "la2":
-                REGION = "AMERICAS";
-                break;
+                return "AMERICAS";
             case "kr":
             case "jp1":
-                REGION = "ASIA";
-                break;
+                return "ASIA";
             case "eun1":
             case "euw1":
             case "tr1":
             case "ru":
-                REGION = "EUROPE";
-                break;
+                return "EUROPE";
             case "oc1":
             case "ph2":
             case "sg2":
             case "th2":
             case "tw2":
             case "vn2":
-                REGION = "SEA";
-                break;
+                return "SEA";
             default:
-                System.err.println("Region: " + REGION + " not found");
+                System.err.println("Region: " + region + " doesn't have a routing region");
+                return null;
         }
+    }
+    private static void loadAPIKey(){
+        URL url = Riot.class.getProtectionDomain().getCodeSource().getLocation();
+        String executingPath = convertURLToString(url);
+        int lastSlash = executingPath.lastIndexOf('/');
+        executingPath = executingPath.substring(0, lastSlash);
+        Path keyPath = Paths.get(executingPath + "/api_key.txt");
+        if(!Files.exists(keyPath)){
+            System.err.println("api_key.txt not found");
+            return;
+        }
+        byte[] pathBytes;
+        try{
+            pathBytes = Files.readAllBytes(keyPath);
+        }catch (IOException e){
+            e.printStackTrace();
+            return;
+        }
+        RIOT_API_KEY = new String(pathBytes);
+    }
+    private static String convertURLToString(URL url){
+        String str = url.getPath();
+        if(str.charAt(0) == '/'){
+            str = str.substring(1);
+        }
+        return str.replace("%20"," ");
     }
 }

@@ -15,9 +15,12 @@ public class Champions{
     private static final HashMap<Integer, String> idToName = new HashMap<>(256);
     private static final HashMap<String, Integer> nameToId = new HashMap<>(256);
 
+    private static final HashMap<Integer, Role[]> idToRoles = new HashMap<>(256);
+
     static{
         try{
             loadChampions();
+            loadRoles();
         }catch (IOException ignored){
         }
     }
@@ -45,7 +48,54 @@ public class Champions{
             nameToId.put(name, id);
         }
     }
+    private static void loadRoles() throws IOException{
+        URL url = Champions.class.getResource("/roles.txt");
+        if(url == null)
+            return;
 
+        URI uri;
+        try{
+            uri = url.toURI();
+        }catch (URISyntaxException e){
+            e.printStackTrace();
+            return;
+        }
+
+        List<String> lines = Files.readAllLines(Paths.get(uri.getPath().substring(1)));
+        for(String line : lines){
+            int colon = line.indexOf(':');
+            String name = line.substring(0, colon);
+            String rolesStr = line.substring(colon + 1);
+            String[] roleSplit = rolesStr.split(",");
+            int id = nameToId.get(name);
+            Role[] roles = new Role[roleSplit.length];
+            for (int i = 0; i < roles.length; i++){
+                char identifier = roleSplit[i].charAt(0);
+                roles[i] = Role.from(identifier);
+            }
+            idToRoles.put(id, roles);
+        }
+    }
+
+    public static boolean playsRole(int championId, Role role){
+        Role[] roles = idToRoles.get(championId);
+        if(roles == null)
+            return false;
+
+        for (Role r : roles){
+            if (r == role){
+                return true;
+            }
+        }
+        return false;
+    }
+    public static  Role[] rolesOf(int championId){
+        Role[] roles = idToRoles.get(championId);
+        if(roles == null){
+            return new Role[0];
+        }
+        return roles;
+    }
     public static String getChampionName(int id){
         return idToName.get(id);
     }
