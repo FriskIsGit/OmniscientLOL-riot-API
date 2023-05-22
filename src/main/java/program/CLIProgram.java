@@ -11,6 +11,7 @@ import lol.opgg.OPGG;
 import lol.opgg.RankEntry;
 import lol.ranks.LeagueRank;
 import lol.ranks.Queue;
+import program.commands.FindPlayerCommand;
 import program.commands.GameCommand;
 import program.commands.MatchCommand;
 
@@ -39,9 +40,9 @@ public class CLIProgram{
                     System.out.println(System.currentTimeMillis());
                     break;
                 case "region":
+                case "r":
                     Riot.setRegion(split[1]);
                     break;
-                case "rank":
                 case "player":
                 case "p":
                     if(split[1].isEmpty()){
@@ -64,6 +65,10 @@ public class CLIProgram{
                         continue;
                     }
                     MatchCommand.fetchMatch(split[1]);
+                    break;
+                case "find":
+                    List<String> servers = FindPlayerCommand.findPlayer(split[1]);
+                    System.out.println(servers);
                     break;
                 default:
             }

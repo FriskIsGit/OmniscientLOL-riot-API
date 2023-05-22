@@ -28,7 +28,7 @@ public class GameCommand{
     private SummonerEntry[] leftTeam;
     private SummonerEntry[] rightTeam;
 
-    private GameCommand(){
+    protected GameCommand(){
     }
 
     public static void fetchGame(String playerName){
@@ -83,24 +83,25 @@ public class GameCommand{
             int champId = Champions.getChampionId(summoners[i].championName).expect("Unknown champion name");
             players[i] = new Player(champId);
         }
+        RoleState state = new RoleState();
 
-        Role[] roles = {Role.TOP, Role.JUNGLE, Role.MID, Role.ADC, Role.SUPPORT};
-        boolean[] assignedRoles = new boolean[5];
         for (int i = 0; i < len; i++){
             SummonerEntry summoner = summoners[i];
             if (summoner.spell1 == Spell.SMITE || summoner.spell2 == Spell.SMITE){
                 players[i].assignedRole = Role.JUNGLE;
-                assignedRoles[1] = true;
+                state.setAssigned(Role.JUNGLE);
                 break;
             }
         }
 
+        Role[] roles = {Role.TOP, Role.JUNGLE, Role.MID, Role.ADC, Role.SUPPORT};
         //assign single-role champions first, for more probability
         for (int i = 0; i < 5; i++){
-            if(assignedRoles[i]){
+            Role targetRole = roles[i];
+            if(state.isAssigned(targetRole)){
                 continue;
             }
-            Role targetRole = roles[i];
+
             //iterate over players
             for (int j = 0; j < 5; j++){
                 if(players[j].hasRole()){
@@ -112,26 +113,36 @@ public class GameCommand{
                 }
                 if (champRoles[0] == targetRole){
                     players[j].assignedRole = targetRole;
-                    assignedRoles[i] = true;
+                    state.setAssigned(targetRole);
                     break;
                 }
             }
         }
 
+        List<Role[]> rolePool = new ArrayList<>();
         //assign many-role champions
-        for (int i = 0; i < 5; i++){
-            if(assignedRoles[i]){
+        for (int j = 0; j < 5; j++){
+            if(players[j].hasRole()){
                 continue;
             }
-            Role targetRole = roles[i];
+            Role[] champRoles = Champions.rolesOf(players[j].championId);
+            //store roles to filter the role pool for unique elements to avoid conflicts
+            rolePool.add(champRoles);
+        }
+
+        List<Role> unique = uniqueRoles(rolePool);
+        for(Role role : unique){
+            if(state.isAssigned(role)){
+                continue;
+            }
             //iterate over players
             for (int j = 0; j < 5; j++){
                 if(players[j].hasRole()){
                     continue;
                 }
-                if(Champions.playsRole(players[j].championId, targetRole)){
-                    players[j].assignedRole = targetRole;
-                    assignedRoles[i] = true;
+                if (Champions.playsRole(players[j].championId, role)){
+                    players[j].assignedRole = role;
+                    state.setAssigned(role);
                     break;
                 }
             }
@@ -140,36 +151,48 @@ public class GameCommand{
         SummonerEntry[] summonersCopy = new SummonerEntry[len];
         System.arraycopy(summoners, 0, summonersCopy, 0, len);
 
+        Iterator<Role> unassignedRoles = state.unassignedRoles().iterator();
         for (int i = 0; i < 5; i++){
             Player player = players[i];
             if(player.hasRole()){
-                switch (player.assignedRole){
-                    case TOP:
-                        summoners[0] = summonersCopy[i];
-                        break;
-                    case JUNGLE:
-                        summoners[1] = summonersCopy[i];
-                        break;
-                    case MID:
-                        summoners[2] = summonersCopy[i];
-                        break;
-                    case ADC:
-                        summoners[3] = summonersCopy[i];
-                        break;
-                    case SUPPORT:
-                        summoners[4] = summonersCopy[i];
-                        break;
-                }
+                int index = RoleState.roleToIndex(player.assignedRole);
+                summoners[index] = summonersCopy[i];
             }else{
-                // go over unassigned roles and fill the gaps
-                for (int j = 0; j < 5; j++){
-                    if(!assignedRoles[j]){
-                        summoners[j] = summonersCopy[i];
-                        break;
-                    }
+                // fill the gaps
+                Role unassigned = unassignedRoles.next();
+                int index = RoleState.roleToIndex(unassigned);
+                summoners[index] = summonersCopy[i];
+            }
+        }
+    }
+
+    public List<Role> uniqueRoles(List<Role[]> roleArrays){
+        int arrays = roleArrays.size();
+        if(arrays == 0){
+            return Collections.emptyList();
+        }
+        if(arrays == 1){
+            Role[] roles = roleArrays.get(0);
+            List<Role> set = new ArrayList<>(roles.length);
+            set.addAll(Arrays.asList(roles));
+            return set;
+        }
+
+        List<Role> unique = new ArrayList<>(Arrays.asList(roleArrays.get(0)));
+        List<Role> repeatedRoles = new ArrayList<>();
+        for (int i = 1; i < arrays; i++){
+            Role[] roles = roleArrays.get(i);
+            for (Role role : roles){
+                if (unique.contains(role)){
+                    unique.remove(role);
+                    repeatedRoles.add(role);
+                }else if(!repeatedRoles.contains(role)){
+                    //not contained in unique
+                    unique.add(role);
                 }
             }
         }
+        return unique;
     }
 
     private void complementTeamsRanks(){
@@ -384,5 +407,44 @@ class Player{
     @Override
     public String toString(){
         return "[" + championId + ", " + assignedRole + "]";
+    }
+}
+
+class RoleState{
+    private static final Role[] ROLES = {Role.TOP, Role.JUNGLE, Role.MID, Role.ADC, Role.SUPPORT};
+    public boolean[] assignedRoles = new boolean[5];
+
+    public boolean isAssigned(Role role){
+        int index = roleToIndex(role);
+        return assignedRoles[index];
+    }
+    public void setAssigned(Role role){
+        int index = roleToIndex(role);
+        assignedRoles[index] = true;
+    }
+    public List<Role> unassignedRoles(){
+        List<Role> unassigned = new ArrayList<>(5);
+        for (int i = 0; i < 5; i++){
+            if(assignedRoles[i]){
+               continue;
+            }
+            unassigned.add(ROLES[i]);
+        }
+        return unassigned;
+    }
+    public static int roleToIndex(Role role){
+        switch (role){
+            case TOP:
+                return 0;
+            case JUNGLE:
+                return 1;
+            case MID:
+                return 2;
+            case ADC:
+                return 3;
+            case SUPPORT:
+            default:
+                return 4;
+        }
     }
 }

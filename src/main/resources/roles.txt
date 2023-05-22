@@ -21,7 +21,7 @@ Cassiopeia:M
 Chogath:T
 Corki:M
 Darius:T
-Diana:J
+Diana:J,M
 Draven:B
 DrMundo:T
 Ekko:J
@@ -83,7 +83,7 @@ Morgana:S
 Nami:S
 Nasus:T
 Nautilus:S
-Neeko:J,S
+Neeko:J,M,S
 Nidalee:J
 Nilah:B
 Nocturne:J
