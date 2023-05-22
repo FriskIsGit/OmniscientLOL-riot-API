@@ -56,7 +56,7 @@ public class GameCommand{
             ElapsedTime elapsedTime = new ElapsedTime(System.currentTimeMillis() - gameInfo.gameStartTime);
             simpleGameInfo.append(elapsedTime).append(' ');
         }
-        simpleGameInfo.append(gameInfo.gameMode);
+        simpleGameInfo.append(gameInfo.gameMode).append(' ').append(gameInfo.gameType);
         System.out.println(simpleGameInfo);
         String scoreboard = statsToPrettyString(summoner.id);
         System.out.println(scoreboard);

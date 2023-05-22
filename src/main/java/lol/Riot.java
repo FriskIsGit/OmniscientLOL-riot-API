@@ -12,7 +12,7 @@ public class Riot{
     public static final String[] REGIONS = {
             "na1", "eun1", "euw1", "jp1", "kr", "la1", "la2",
             "br1", "oc1", "ph2", "ru", "sg2", "th2", "tr1", "tw2", "vn2"};
-    private static String RIOT_API_KEY = "RGAPI-d759fef1-a658-4701-a4e5-ad34417d5274";
+    private static String RIOT_API_KEY = "RGAPI-b9ba3200-99eb-44db-92ad-95058b176a45";
     public static String REGION = "eun1";
 
     static{

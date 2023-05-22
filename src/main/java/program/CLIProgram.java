@@ -24,55 +24,79 @@ public class CLIProgram{
         String input = "";
         while(!input.equals("exit")){
             input = scanner.nextLine();
-            String[] split = input.split(" ");
-            split = new String[]{split[0], merge(split, 1)};
-            System.out.println(Arrays.toString(split));
-            switch (split[0].toLowerCase()){
+            String[] commands = twoSplit(input);
+            System.out.println(Arrays.toString(commands));
+            switch (commands[0].toLowerCase()){
                 case "g":
                 case "game":
-                    if(split[1].isEmpty()){
+                    if(commands[1].isEmpty()){
                         System.err.println("Missing name argument");
                         continue;
                     }
-                    GameCommand.fetchGame(split[1]);
+                    GameCommand.fetchGame(commands[1]);
                     break;
                 case "now":
                     System.out.println(System.currentTimeMillis());
                     break;
                 case "region":
                 case "r":
-                    Riot.setRegion(split[1]);
+                    Riot.setRegion(commands[1]);
                     break;
                 case "player":
                 case "p":
-                    if(split[1].isEmpty()){
+                    if(commands[1].isEmpty()){
                         System.err.println("Missing name argument");
                         continue;
                     }
-                    fetchPlayerRank(split[1]);
+                    fetchPlayerRank(commands[1]);
+                    break;
+                case "regions":
+                    System.out.println(Arrays.toString(Riot.REGIONS));
                     break;
                 case "matches":
-                    if(split[1].isEmpty()){
+                    if(commands[1].isEmpty()){
                         System.err.println("Missing name argument");
                         continue;
                     }
-                    MatchCommand.fetchMatches(split[1]);
+                    MatchCommand.fetchMatches(commands[1]);
                     break;
                 case "match":
                 case "m":
-                    if(split[1].isEmpty()){
+                    if(commands[1].isEmpty()){
                         System.err.println("Missing matchId argument");
                         continue;
                     }
-                    MatchCommand.fetchMatch(split[1]);
+                    MatchCommand.fetchMatch(commands[1]);
                     break;
                 case "find":
-                    List<String> servers = FindPlayerCommand.findPlayer(split[1]);
+                    List<String> servers = FindPlayerCommand.findPlayer(commands[1]);
                     System.out.println(servers);
                     break;
                 default:
             }
         }
+    }
+
+    public static String[] twoSplit(String input){
+        int firstSpace = -1;
+        char[] arr = input.toCharArray();
+            for (int i = 0; i < arr.length; i++){
+                if(arr[i] == ' '){
+                    firstSpace = i;
+                    break;
+                }
+            }
+            if(firstSpace == -1){
+            return new String[]{input, " "};
+        }
+        String[] output = new String[2];
+        output[0] = input.substring(0, firstSpace);
+        if(firstSpace + 1 == arr.length){
+            output[1] = " ";
+            return output;
+        }
+        output[1] = input.substring(firstSpace + 1);
+        return output;
     }
 
     public void earlyInitialize(){
@@ -148,7 +172,7 @@ public class CLIProgram{
 
     public void printCommands(){
         System.out.print("Available commands: ");
-        String[] commands = {"game", "player", "match", "region", "matches"};
+        String[] commands = {"game", "player", "find", "match", "region", "matches"};
         System.out.println(Arrays.toString(commands));
     }
 }
