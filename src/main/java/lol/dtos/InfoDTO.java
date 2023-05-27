@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 public class InfoDTO{
-    public long gameCreation, gameDuration, gameStartTimestamp, gameEndTimestamp, gameId;
+    public long gameCreation, gameStartTimestamp, gameEndTimestamp, gameId;
     public String gameMode, gameName, gameType, gameVersion, platformId, tournamentCode;
-    public int mapId, queueId;
+    public int mapId, queueId, gameDuration;
     public TeamDTO[] teams;
     public ParticipantDTO[] participants;
 
@@ -21,7 +21,6 @@ public class InfoDTO{
             return null;
         InfoDTO info = new InfoDTO();
         info.gameCreation = json.getLong("gameCreation");
-        info.gameDuration = json.getLong("gameDuration");
         info.gameStartTimestamp = json.getLong("gameStartTimestamp");
         info.gameEndTimestamp = json.getLong("gameEndTimestamp");
         info.gameId = json.getLong("gameId");
@@ -35,6 +34,7 @@ public class InfoDTO{
 
         info.mapId = json.getInteger("mapId");
         info.queueId = json.getInteger("queueId");
+        info.gameDuration = json.getInteger("gameDuration"); //in seconds
 
         info.participants = toParticipantsArr(json.getJSONArray("participants"));
         info.teams = toTeamsArr(json.getJSONArray("teams"));

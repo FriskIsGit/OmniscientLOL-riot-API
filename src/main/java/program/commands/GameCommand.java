@@ -15,9 +15,9 @@ import lol.opgg.RankEntry;
 import lol.ranks.LeagueRank;
 import lol.ranks.Queue;
 import lol.spells.Spell;
-import program.structs.ElapsedTime;
+import program.structs.TimeElapsed;
 import program.structs.SummonerEntry;
-import program.structs.Teams;
+import program.structs.GameTeams;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -46,17 +46,17 @@ public class GameCommand{
             System.err.println("Likely the game is over by now or it's a clash game");
             return;
         }
-        Teams teams = Teams.split(gameInfo.participants);
-        leftTeam = getSummonerEntries(teams.leftTeam);
-        rightTeam = getSummonerEntries(teams.rightTeam);
+        GameTeams gameTeams = GameTeams.split(gameInfo.participants);
+        leftTeam = getSummonerEntries(gameTeams.leftTeam);
+        rightTeam = getSummonerEntries(gameTeams.rightTeam);
         sortTeams();
         complementTeamsRanks();
         StringBuilder simpleGameInfo = new StringBuilder();
         if(gameInfo.gameStartTime != 0){
-            ElapsedTime elapsedTime = new ElapsedTime(System.currentTimeMillis() - gameInfo.gameStartTime);
-            simpleGameInfo.append(elapsedTime).append(' ');
+            TimeElapsed timeElapsed = new TimeElapsed(System.currentTimeMillis() - gameInfo.gameStartTime);
+            simpleGameInfo.append(timeElapsed).append(' ');
         }
-        simpleGameInfo.append(gameInfo.gameMode).append(' ').append(gameInfo.gameType);
+        simpleGameInfo.append(gameInfo.gameMode);
         System.out.println(simpleGameInfo);
         String scoreboard = statsToPrettyString(summoner.id);
         System.out.println(scoreboard);
@@ -254,7 +254,7 @@ public class GameCommand{
 
     private String statsToPrettyString(String queriedPlayerId){
         StringBuilder str = new StringBuilder();
-        final int CHAMP_LEN = 13, DUO_LEN = 4, FLEX_LEN = 5, PIPE_LEN = 2;
+        final int CHAMP_LEN = 14, DUO_LEN = 4, FLEX_LEN = 5, PIPE_LEN = 2;
         int totalWidth = (CHAMP_LEN + DUO_LEN + FLEX_LEN + PIPE_LEN) * 2;
         str.append(line(totalWidth, '_'));
         str.append('\n');
