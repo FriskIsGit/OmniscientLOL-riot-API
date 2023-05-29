@@ -20,4 +20,13 @@ public class TableFormatTest{
         table.writeSummaryRow(0);
         System.out.println(table);
     }
+    @Test
+    public void test2(){
+        TableFormat table = new TableFormat(true);
+        table.addColumnDefinition("CHAR", 6);
+        table.addColumnDefinition("Text", 6);
+        table.writeToRow(Arrays.asList('=', "woah"));
+    }
 }
+
+

@@ -3,10 +3,7 @@ package program.commands;
 import lol.Riot;
 import lol.apis.MatchV5;
 import lol.apis.SummonerV4;
-import lol.dtos.InfoDTO;
-import lol.dtos.MatchDTO;
-import lol.dtos.ParticipantDTO;
-import lol.dtos.SummonerDTO;
+import lol.dtos.*;
 import lol.requests.SimpleResponse;
 import lol.requests.URIPath;
 import org.apache.http.client.fluent.Request;
@@ -16,13 +13,15 @@ import program.structs.TimeElapsed;
 
 import java.time.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MatchCommand{
     private final TableFormat participantsTable = new TableFormat(true);
     private final TableFormat teamsTable = new TableFormat(true);
+    private TeamStats leftStats, rightStats;
     private MatchDTO match;
-    private GameStats gameStats;
+    private BothTeamsStats gameStats;
     private boolean isARAM = false;
     private MatchCommand(){
     }
@@ -62,14 +61,19 @@ public class MatchCommand{
             System.out.println(response.body);
             return;
         }
+        //System.out.println(response.body);
         match = MatchDTO.fromJson(response.body);
         String simpleGameInfo = infoToString(match.info);
         System.out.println(simpleGameInfo);
-        gameStats = new GameStats(match.info.participants);
+        gameStats = new BothTeamsStats(match.info.participants);
         isARAM = match.info.gameMode.equals("ARAM");
         ParticipantTeams teams = ParticipantTeams.split(match.info.participants);
-        TableFormat table = participantsToTable(teams);
-        System.out.println(table);
+        leftStats = TeamStats.fromParticipants(teams.leftTeam);
+        rightStats = TeamStats.fromParticipants(teams.rightTeam);
+        participantsToTable(teams);
+        System.out.println(participantsTable);
+        participantsToTeamTable();
+        System.out.println(teamsTable);
     }
 
     private static String infoToString(InfoDTO info){
@@ -84,10 +88,43 @@ public class MatchCommand{
         return str.toString();
     }
 
-    private TableFormat participantsToTable(ParticipantTeams teams){
+    private void participantsToTeamTable(){
+        TeamDTO[] teamsData = match.info.teams;
+        assert teamsData.length == 2;
+        String leftResult = teamsData[0].win ? "VICTORY" : (leftStats.surrendered ? "SURRENDER" : "DEFEAT");
+        String rightResult = teamsData[1].win ? "VICTORY" : (rightStats.surrendered ? "SURRENDER" : "DEFEAT");
+        teamsTable.addColumnDefinition("TEAMS", 8);
+        teamsTable.addColumnDefinition("RESULT", 9);
+        teamsTable.addColumnDefinition("KILLS");
+        if(isARAM){
+            teamsTable.addColumnDefinition("CC-kills-with-ally");
+        }else{
+            teamsTable.addColumnDefinition("HERALDS");
+            teamsTable.addColumnDefinition("DRAGONS");
+            teamsTable.addColumnDefinition("BARONS");
+            teamsTable.addColumnDefinition("STOLEN");
+        }
+        teamsTable.addColumnDefinition("TURRET-KILLS");
+        if(isARAM){
+            teamsTable.writeToRow(Arrays.asList("UPPER", leftResult, leftStats.kills, leftStats.ccKills, leftStats.turretsDestroyed));
+            teamsTable.writeToRow(Arrays.asList("LOWER", rightResult, rightStats.kills, rightStats.ccKills, rightStats.turretsDestroyed));
+        }else{
+            teamsTable.writeToRow(Arrays.asList("UPPER", leftResult, leftStats.kills, leftStats.heralds,
+                    leftStats.dragons, leftStats.barons, leftStats.stolen, leftStats.turretsDestroyed));
+            teamsTable.writeToRow(Arrays.asList("LOWER", rightResult, rightStats.kills, rightStats.heralds,
+                    rightStats.dragons, rightStats.barons, rightStats.stolen, rightStats.turretsDestroyed));
+        }
+    }
+
+    private void participantsToTable(ParticipantTeams teams){
         participantsTable.addColumnDefinition("CHAMP", 13);
+        participantsTable.addColumnDefinition("K/D/A", 8);
         participantsTable.addColumnDefinition("DMG_DEALT%", true);
+        /*participantsTable.addColumnDefinition("DMG_DEALT_CHAMPS", true);
+        participantsTable.addColumnDefinition("DMG_TAKEN", true);
+        participantsTable.addColumnDefinition("DMG_MITIGATED", true);*/
         participantsTable.addColumnDefinition("DMG_ABSORBED%", true);
+        participantsTable.addColumnDefinition("KP%"); // in team
         participantsTable.addColumnDefinition("CC%", 6, true);
         participantsTable.addColumnDefinition("CS_SCORE", true);
         participantsTable.addColumnDefinition("GOLD", 8, true);
@@ -96,41 +133,48 @@ public class MatchCommand{
         if(isARAM){
 
         }else{
-            participantsTable.addColumnDefinition("MAX_LVL_LEAD",false);
+            participantsTable.addColumnDefinition("PINKS", true);
             participantsTable.addColumnDefinition("VISION", true);
         }
+        participantsTable.addColumnDefinition("SKILLSHOTS_DODGED", true);
 
-        appendParticipantEntries(teams.leftTeam);
+        appendParticipantEntries(teams.leftTeam, leftStats);
         participantsTable.writeSeparatorRow('‾');
         participantsTable.writeSummaryRow(0);
         participantsTable.writeSeparatorRow('/');
         participantsTable.writeSeparatorRow('\\');
         participantsTable.writeEmptyRow();
-        appendParticipantEntries(teams.rightTeam);
+        appendParticipantEntries(teams.rightTeam, rightStats);
         participantsTable.writeSeparatorRow('‾');
         participantsTable.writeSummaryRow(teams.leftTeam.length + 1);
-        return participantsTable;
     }
 
-    private void appendParticipantEntries(ParticipantDTO[] team){
+    private void appendParticipantEntries(ParticipantDTO[] team, TeamStats teamStats){
         List<Object> row = new ArrayList<>();
         for (ParticipantDTO participant : team){
             row.add(participant.championName);
+            row.add(participant.kills + "/" + participant.deaths + "/" + participant.assists);
             row.add(percentage(participant.totalDamageDealtToChampions, gameStats.totalDamageDealtToChampions));
+            /*row.add(participant.totalDamageDealtToChampions);
+            row.add(participant.totalDamageTaken);
+            row.add(participant.damageSelfMitigated);*/
             row.add(percentage(participant.totalDamageTaken + participant.damageSelfMitigated, gameStats.allTotalDamageTaken));
+            row.add((int)percentage(participant.kills + participant.assists, teamStats.kills));
             row.add(percentage(participant.timeCCingOthers, gameStats.timeCCingOthers));
             row.add(csPerMinute(
                     participant.totalMinionsKilled + participant.neutralMinionsKilled,
                     TimeElapsed.fromSeconds(match.info.gameDuration)));
             row.add(participant.goldEarned);
-            row.add(participant.enemyMissingPings + participant.dangerPings + participant.getBackPings + participant.allInPings);
+            int allPings = participant.enemyMissingPings + participant.commandPings + participant.dangerPings + participant.enemyVisionPings + participant.getBackPings + participant.allInPings;
+            row.add(allPings);
             row.add(percentage(participant.damageDealtToTurrets, gameStats.damageDealtToTurrets));
             if(isARAM){
             }
             else{
-                row.add(participant.challenges.maxLevelLeadLaneOpponent);
+                row.add(participant.visionWardsBoughtInGame); //control wards (pink wards)
                 row.add(participant.visionScore);
             }
+            row.add(participant.challenges == null ? '-' : participant.challenges.skillshotsDodged);
             participantsTable.writeToRow(row);
             row.clear();
         }
@@ -147,16 +191,17 @@ public class MatchCommand{
     }
 }
 
-class GameStats{
+class BothTeamsStats{
     //sum of all participants in a game
-    int totalDamageDealtToChampions, allTotalDamageTaken, timeCCingOthers, damageDealtToTurrets;
+    int totalDamageDealt, totalDamageDealtToChampions, allTotalDamageTaken, timeCCingOthers, damageDealtToTurrets;
 
-    public GameStats(ParticipantDTO[] entries){
+    public BothTeamsStats(ParticipantDTO[] entries){
         sumUpEntries(entries);
     }
 
     private void sumUpEntries(ParticipantDTO[] entries){
         for(ParticipantDTO participant : entries){
+            totalDamageDealt += participant.totalDamageDealt;
             totalDamageDealtToChampions += participant.totalDamageDealtToChampions;
             allTotalDamageTaken += participant.totalDamageTaken + participant.damageSelfMitigated;
             timeCCingOthers += participant.timeCCingOthers;
@@ -170,4 +215,32 @@ class GameStats{
     }
 }
 
+class TeamStats{
+    public int barons = 0;
+    public int heralds = 0;
+    public int dragons = 0;
+    public int stolen = 0;
+    public int kills = 0;
+    public int turretsDestroyed = 0;
+    public int ccKills = 0;
+    public boolean surrendered = false;
+    public static TeamStats fromParticipants(ParticipantDTO[] team){
+        TeamStats teamStats = new TeamStats();
+        for(ParticipantDTO participant : team){
+            teamStats.dragons += participant.dragonKills;
+            teamStats.barons += participant.baronKills;
+            teamStats.stolen += participant.objectivesStolen;
+            teamStats.kills += participant.kills;
+            teamStats.turretsDestroyed += participant.turretKills;
+            if(!teamStats.surrendered)
+                teamStats.surrendered = participant.gameEndedInSurrender;
+            if(participant.challenges != null)
+                teamStats.heralds = participant.challenges.teamRiftHeraldKills;
+            if(participant.challenges != null)
+                teamStats.ccKills = participant.challenges.immobilizeAndKillWithAlly + participant.challenges.knockEnemyIntoTeamAndKill;
+
+        }
+        return teamStats;
+    }
+}
 

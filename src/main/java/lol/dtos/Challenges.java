@@ -67,6 +67,9 @@ public class Challenges{
         challenges.unseenRecalls = json.getInteger("unseenRecalls");
         challenges.wardTakedowns = json.getInteger("wardTakedowns");
         challenges.wardsGuarded = json.getInteger("wardsGuarded");
+        challenges.teamRiftHeraldKills = json.getInteger("teamRiftHeraldKills");
+        challenges.hadOpenNexus = json.getInteger("hadOpenNexus");
+        challenges.survivedSingleDigitHpCount = json.getInteger("survivedSingleDigitHpCount");
 
         challenges.damagePerMinute = json.getDouble("damagePerMinute");
         challenges.damageTakenOnTeamPercentage = json.getDouble("damageTakenOnTeamPercentage");

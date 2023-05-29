@@ -42,6 +42,8 @@ public class ParticipantDTO{
         participant.championId = json.getInteger("championId");
         participant.championTransform = json.getInteger("championTransform");
         participant.consumablesPurchased = json.getInteger("consumablesPurchased");
+        participant.visionWardsBoughtInGame = json.getInteger("visionWardsBoughtInGame");
+        participant.turretKills = json.getInteger("turretKills");
 
         participant.damageDealtToBuildings = json.getInteger("damageDealtToBuildings");
         participant.damageDealtToObjectives = json.getInteger("damageDealtToObjectives");

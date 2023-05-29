@@ -99,4 +99,25 @@ public class LeagueRankAverageTest{
         LeagueRank leftActual = LeagueRank.fromDivisionScore(average);
         System.out.println(leftActual);
     }
+    @Test
+    public void allTiersAverage(){
+        LeagueRank r1 = new LeagueRank(LeagueRank.DIAMOND, 4);
+        LeagueRank r2 = new LeagueRank(LeagueRank.GOLD, 1);
+        LeagueRank r3 = new LeagueRank(LeagueRank.SILVER, 1);
+        LeagueRank r4 = new LeagueRank(LeagueRank.PLATINUM, 4);
+        LeagueRank r5 = new LeagueRank(LeagueRank.GOLD, 3);
+        LeagueRank r6 = new LeagueRank(LeagueRank.GOLD, 2);
+        LeagueRank r7 = new LeagueRank(LeagueRank.PLATINUM, 4);
+        LeagueRank r8 = new LeagueRank(LeagueRank.GOLD, 1);
+        LeagueRank r9 = new LeagueRank(LeagueRank.PLATINUM, 3);
+        LeagueRank r10 = new LeagueRank(LeagueRank.GOLD, 4);
+        int total = r1.divisionScore() + r2.divisionScore() + r3.divisionScore() + r4.divisionScore()
+                + r5.divisionScore() + r6.divisionScore() + r7.divisionScore() + r8.divisionScore()
+                + r9.divisionScore() + r10.divisionScore();
+        int average = total / 10;
+        LeagueRank rank = LeagueRank.fromDivisionScore(average);
+        System.out.println(rank);
+        assertSame(LeagueRank.GOLD, rank.getTier());
+        assertEquals(2, rank.getDivision());
+    }
 }
