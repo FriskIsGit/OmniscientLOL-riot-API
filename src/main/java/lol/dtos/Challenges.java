@@ -44,10 +44,10 @@ public class Challenges{
         challenges.epicMonsterSteals = json.getInteger("epicMonsterSteals");
         challenges.dragonTakedowns = json.getInteger("dragonTakedowns");
         try{
+            challenges.killParticipation = json.getDouble("killParticipation");
             challenges.laningPhaseGoldExpAdvantage = json.getInteger("laningPhaseGoldExpAdvantage");
             challenges.maxCsAdvantageOnLaneOpponent = json.getInteger("maxCsAdvantageOnLaneOpponent");
             challenges.maxLevelLeadLaneOpponent = json.getInteger("maxLevelLeadLaneOpponent");
-            challenges.killParticipation = json.getDouble("killParticipation");
             challenges.teamDamagePercentage = json.getDouble("teamDamagePercentage");
             challenges.visionScoreAdvantageLaneOpponent = json.getDouble("visionScoreAdvantageLaneOpponent");
         }catch (NullPointerException ignored){
@@ -70,6 +70,8 @@ public class Challenges{
         challenges.teamRiftHeraldKills = json.getInteger("teamRiftHeraldKills");
         challenges.hadOpenNexus = json.getInteger("hadOpenNexus");
         challenges.survivedSingleDigitHpCount = json.getInteger("survivedSingleDigitHpCount");
+        challenges.teamElderDragonKills = json.getInteger("teamElderDragonKills");
+        challenges.takedownsBeforeJungleMinionSpawn = json.getInteger("takedownsBeforeJungleMinionSpawn");
 
         challenges.damagePerMinute = json.getDouble("damagePerMinute");
         challenges.damageTakenOnTeamPercentage = json.getDouble("damageTakenOnTeamPercentage");

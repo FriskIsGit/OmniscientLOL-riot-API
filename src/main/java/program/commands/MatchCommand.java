@@ -1,5 +1,6 @@
 package program.commands;
 
+import com.alibaba.fastjson.JSONArray;
 import lol.Riot;
 import lol.apis.MatchV5;
 import lol.apis.SummonerV4;
@@ -7,14 +8,13 @@ import lol.dtos.*;
 import lol.requests.SimpleResponse;
 import lol.requests.URIPath;
 import org.apache.http.client.fluent.Request;
-import program.structs.ParticipantTeams;
-import program.structs.TableFormat;
-import program.structs.TimeElapsed;
+import program.structs.*;
 
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class MatchCommand{
     private final TableFormat participantsTable = new TableFormat(true);
@@ -42,7 +42,130 @@ public class MatchCommand{
         String routingRegion = Riot.toRoutingRegion(Riot.REGION);
         Request request = Riot.newRequest(routingRegion, endpoint);
         SimpleResponse response = SimpleResponse.performRequest(request).expect("NO RESPONSE");
-        System.out.println(response);
+        System.out.println(response.body);
+        if(response.code != 200){
+            return;
+        }
+        try{
+            //avoid 20 requests/second limit
+            Thread.sleep(1000);
+        }catch (InterruptedException e){
+            throw new RuntimeException(e);
+        }
+        JSONArray stringArr = JSONArray.parseArray(response.body);
+        String[] ids  = new String[stringArr.size()];
+        for (int i = 0; i < stringArr.size(); i++){
+            ids[i] = stringArr.getString(i);
+        }
+
+        MatchDTO[] matches = retrieveMatchesByIds(ids);
+        if(matches.length == 0){
+            System.out.println("No matches found.");
+            return;
+        }
+        SimpleMatch[] simpleMatches = new SimpleMatch[matches.length];
+        for (int i = 0; i < simpleMatches.length; i++){
+            MatchDTO aMatch = matches[i];
+            SimpleMatch simpleMatch = new SimpleMatch(aMatch.metadata.matchId);
+            ParticipantDTO[] participants = aMatch.info.participants;
+            int index = 0;
+            for (int j = 0; j < participants.length; j++){
+                ParticipantDTO participant = participants[j];
+                if (participant.puuid.equals(summoner.puuid)){
+                    simpleMatch.champ = participant.championName;
+                    simpleMatch.kills = participant.kills;
+                    simpleMatch.deaths = participant.deaths;
+                    simpleMatch.assists = participant.assists;
+                    index = j;
+                    break;
+                }
+            }
+            ParticipantTeams teams = ParticipantTeams.split(aMatch.info.participants);
+            TeamDTO[] teamDTOs = aMatch.info.teams;
+            simpleMatch.win = (index < teams.leftTeam.length && teamDTOs[0].win)
+                    || (index >= teams.leftTeam.length && teamDTOs[1].win);
+            simpleMatch.length = TimeElapsed.fromSeconds(aMatch.info.gameDuration);
+            simpleMatch.type = aMatch.info.matchType();
+            if(simpleMatch.type == null)
+                System.out.println(aMatch.info.queueId);
+            simpleMatch.queueId = aMatch.info.queueId;
+            simpleMatches[i] = simpleMatch;
+        }
+        TableFormat matchesTable = new TableFormat(true);
+        matchesTable.addColumnDefinition("MATCH-ID", 15);
+        matchesTable.addColumnDefinition("CHAMPION", 13);
+        matchesTable.addColumnDefinition("K/D/A", 13);
+        matchesTable.addColumnDefinition("LENGTH", 9);
+        matchesTable.addColumnDefinition("WIN");
+        matchesTable.addColumnDefinition("TYPE", 12);
+
+        for(SimpleMatch simpleMatch : simpleMatches){
+            String win = simpleMatch.win ? "yes" : "no";
+            matchesTable.writeToRow(Arrays.asList(simpleMatch.id, simpleMatch.champ, simpleMatch.kda(),
+                    simpleMatch.length, win, simpleMatch.type));
+        }
+        int sumK=0, sumD=0, sumA=0;
+        int allSeconds = 0;
+        for(SimpleMatch simpleMatch : simpleMatches){
+            allSeconds += simpleMatch.length.toAllSeconds();
+            sumK += simpleMatch.kills;
+            sumD += simpleMatch.deaths;
+            sumA += simpleMatch.assists;
+        }
+        int entries = matches.length;
+        String averageKDA = new SimpleMatch(sumK / entries, sumD / entries, sumA / entries).kda();
+        matchesTable.writeSeparatorRow('-');
+        matchesTable.writeToRow(Arrays.asList('-', '-', averageKDA, TimeElapsed.fromSeconds(allSeconds/entries), '-', '-'));
+        System.out.println(matchesTable);
+    }
+
+    private MatchDTO[] retrieveMatchesByIds(String[] ids){
+        if(ids.length == 0){
+            return new MatchDTO[0];
+        }
+
+        int threads = ids.length;
+        MatchDTO[] matches = new MatchDTO[threads];
+        System.out.println("Retrieving matches, threads: " + threads);
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        Future<?>[] futures = new Future[threads];
+        for (int i = 0; i < threads; i++){
+            String matchId = ids[i];
+            int finalIndex = i;
+            Runnable runnableTask = () -> {
+                String endpoint = URIPath.of(MatchV5.byMatchId).args(matchId);
+                String routingRegion = Riot.toRoutingRegion(Riot.REGION);
+                Request request = Riot.newRequest(routingRegion, endpoint);
+                SimpleResponse response = SimpleResponse.performRequest(request).expect("NO RESPONSE");
+                if(response.code != 200){
+                    System.out.println(response.body);
+                    return;
+                }
+                MatchDTO currMatch = MatchDTO.fromJson(response.body);
+                if (currMatch == null){
+                    return;
+                }
+                matches[finalIndex] = currMatch;
+            };
+            futures[i] = executor.submit(runnableTask);
+        }
+        long st = System.currentTimeMillis();
+        final int timeOutMs = 5000;
+        //block until all threads are finished
+        for(Future<?> future : futures){
+            try{
+                long timeSpent = System.currentTimeMillis() - st;
+                if(timeSpent > timeOutMs){
+                    System.err.println("Timed out at match retrieving");
+                    break;
+                }
+                future.get(timeOutMs - timeSpent, TimeUnit.MILLISECONDS);
+            }catch (InterruptedException | ExecutionException | TimeoutException e){
+                System.err.println("Timed out at match retrieving");
+                break;
+            }
+        }
+        return matches;
     }
 
     private void fetchMatchImpl(String matchId){
@@ -79,7 +202,7 @@ public class MatchCommand{
     private static String infoToString(InfoDTO info){
         StringBuilder str = new StringBuilder();
         str.append(TimeElapsed.fromSeconds(info.gameDuration)).append(' ');
-        str.append(info.gameMode).append(' ');
+        str.append(info.matchType()).append(' ');
         Instant start = Instant.ofEpochMilli(info.gameStartTimestamp);
         ZonedDateTime zoneDate = ZonedDateTime.ofInstant(start, ZoneId.systemDefault());
         str.append(zoneDate.getDayOfMonth()).append(' ')
@@ -103,6 +226,7 @@ public class MatchCommand{
             teamsTable.addColumnDefinition("DRAGONS");
             teamsTable.addColumnDefinition("BARONS");
             teamsTable.addColumnDefinition("STOLEN");
+            teamsTable.addColumnDefinition("INVADE-KILLS");
         }
         teamsTable.addColumnDefinition("TURRET-KILLS");
         if(isARAM){
@@ -110,9 +234,9 @@ public class MatchCommand{
             teamsTable.writeToRow(Arrays.asList("LOWER", rightResult, rightStats.kills, rightStats.ccKills, rightStats.turretsDestroyed));
         }else{
             teamsTable.writeToRow(Arrays.asList("UPPER", leftResult, leftStats.kills, leftStats.heralds,
-                    leftStats.dragons, leftStats.barons, leftStats.stolen, leftStats.turretsDestroyed));
+                    leftStats.dragons, leftStats.barons, leftStats.stolen, leftStats.invadeKills, leftStats.turretsDestroyed));
             teamsTable.writeToRow(Arrays.asList("LOWER", rightResult, rightStats.kills, rightStats.heralds,
-                    rightStats.dragons, rightStats.barons, rightStats.stolen, rightStats.turretsDestroyed));
+                    rightStats.dragons, rightStats.barons, rightStats.stolen, rightStats.invadeKills, rightStats.turretsDestroyed));
         }
     }
 
@@ -137,15 +261,16 @@ public class MatchCommand{
             participantsTable.addColumnDefinition("VISION", true);
         }
         participantsTable.addColumnDefinition("SKILLSHOTS_DODGED", true);
+        participantsTable.addColumnDefinition("PLAYER_NAME", 16);
 
         appendParticipantEntries(teams.leftTeam, leftStats);
-        participantsTable.writeSeparatorRow('‾');
+        participantsTable.writeSeparatorRow('-');
         participantsTable.writeSummaryRow(0);
         participantsTable.writeSeparatorRow('/');
         participantsTable.writeSeparatorRow('\\');
         participantsTable.writeEmptyRow();
         appendParticipantEntries(teams.rightTeam, rightStats);
-        participantsTable.writeSeparatorRow('‾');
+        participantsTable.writeSeparatorRow('-');
         participantsTable.writeSummaryRow(teams.leftTeam.length + 1);
     }
 
@@ -175,6 +300,7 @@ public class MatchCommand{
                 row.add(participant.visionScore);
             }
             row.add(participant.challenges == null ? '-' : participant.challenges.skillshotsDodged);
+            row.add(participant.summonerName);
             participantsTable.writeToRow(row);
             row.clear();
         }
@@ -219,8 +345,10 @@ class TeamStats{
     public int barons = 0;
     public int heralds = 0;
     public int dragons = 0;
+    public int elders = 0;
     public int stolen = 0;
     public int kills = 0;
+    public int invadeKills = 0;
     public int turretsDestroyed = 0;
     public int ccKills = 0;
     public boolean surrendered = false;
@@ -238,6 +366,10 @@ class TeamStats{
                 teamStats.heralds = participant.challenges.teamRiftHeraldKills;
             if(participant.challenges != null)
                 teamStats.ccKills = participant.challenges.immobilizeAndKillWithAlly + participant.challenges.knockEnemyIntoTeamAndKill;
+            if(participant.challenges != null)
+                teamStats.elders = participant.challenges.teamElderDragonKills;
+            if(participant.challenges != null)
+                teamStats.invadeKills = participant.challenges.takedownsBeforeJungleMinionSpawn;
 
         }
         return teamStats;

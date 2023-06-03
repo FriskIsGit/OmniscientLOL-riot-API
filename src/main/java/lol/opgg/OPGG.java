@@ -52,7 +52,7 @@ public class OPGG{
             System.out.println("More tiers are present in the html.");
         }
         if(tiers == -1){
-            System.err.println("There's no tier-list for user: " + name);
+            System.err.println("There's no tier-list for user (new op.gg retrieval): " + name);
             return Collections.emptyList();
         }
         List<RankEntry> rankEntries;

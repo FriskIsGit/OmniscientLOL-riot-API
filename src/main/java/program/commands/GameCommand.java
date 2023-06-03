@@ -256,7 +256,7 @@ public class GameCommand{
         StringBuilder str = new StringBuilder();
         final int CHAMP_LEN = 14, DUO_LEN = 4, FLEX_LEN = 5, PIPE_LEN = 2;
         int totalWidth = (CHAMP_LEN + DUO_LEN + FLEX_LEN + PIPE_LEN) * 2;
-        str.append(line(totalWidth, '_'));
+        str.append(line(totalWidth, '-'));
         str.append('\n');
         str.append(padToLength("CHAMPION", CHAMP_LEN));
         str.append(padToLength("DUO", DUO_LEN));
@@ -266,7 +266,7 @@ public class GameCommand{
         str.append(padToLength("DUO", DUO_LEN));
         str.append(padToLength("CHAMPION", CHAMP_LEN));
         str.append('\n');
-        str.append(line(totalWidth, '‾'));
+        str.append(line(totalWidth, '-'));
         str.append('\n');
         boolean searching = true;
         int biggerTeam = Math.max(leftTeam.length, rightTeam.length);

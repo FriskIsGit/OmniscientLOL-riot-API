@@ -163,10 +163,10 @@ public class TableFormat{
             totalWidth += widths[i];
         }
         StringBuilder str = new StringBuilder();
-        str.append(line(totalWidth + columns, '—'));
+        str.append(line(totalWidth + columns, '-'));
         str.append(columnHeaders);
         str.append('\n');
-        str.append(line(totalWidth + columns, '—'));
+        str.append(line(totalWidth + columns, '-'));
         str.append('\n');
         for (int i = 0; i < data.size(); i++){
             boolean skip = false;

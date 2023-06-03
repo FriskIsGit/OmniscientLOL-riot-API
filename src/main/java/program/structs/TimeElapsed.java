@@ -22,6 +22,10 @@ public class TimeElapsed{
         return time;
     }
 
+    public int toAllSeconds(){
+        return minutes * 60 + seconds;
+    }
+
     @Override
     public String toString(){
         String sec = seconds < 10 ? "0" + seconds : String.valueOf(seconds);

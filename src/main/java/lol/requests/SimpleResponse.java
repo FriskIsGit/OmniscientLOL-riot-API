@@ -47,7 +47,10 @@ public class SimpleResponse{
         return "[" + code + "]\n" + body + "\nTime taken ms: " + timeTakenMs;
     }
 
-    private static String streamToString(InputStream inputStream){
+    public static String streamToString(InputStream inputStream){
+        if(inputStream == null){
+            return "";
+        }
         byte[] buffer = new byte[32768];
         try {
             int writeOffset = 0;

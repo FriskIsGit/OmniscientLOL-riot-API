@@ -100,10 +100,13 @@ public class CLIProgram{
     }
 
     public void earlyInitialize(){
-        //loads static initializers (api key to not mess with the flow later)
+        //loads static initializers (api key and champions to not mess with the flow later )
         try{
             Class.forName("lol.Riot");
-        }catch (ClassNotFoundException ignored){}
+            Class.forName("lol.champions.Champions");
+        }catch (ClassNotFoundException | ExceptionInInitializerError e){
+            e.printStackTrace();
+        }
     }
 
     private void fetchPlayerRank(String summonerName){
@@ -172,7 +175,7 @@ public class CLIProgram{
 
     public void printCommands(){
         System.out.print("Available commands: ");
-        String[] commands = {"game", "player", "find", "match", "region", "matches"};
+        String[] commands = {"game", "player", "find", "match", "matches", "region", "regions"};
         System.out.println(Arrays.toString(commands));
     }
 }

@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 public class InfoDTO{
+    //gameType - always returns MATCHED_GAME, so there's no point in storing it
+    //most game-type related data is expressed as a value of queueId [Game Constants documentation xD]
     public long gameCreation, gameStartTimestamp, gameEndTimestamp, gameId;
-    public String gameMode, gameName, gameType, gameVersion, platformId, tournamentCode;
+    public String gameMode, gameName, gameVersion, platformId, tournamentCode;
     public int mapId, queueId, gameDuration;
     public TeamDTO[] teams;
     public ParticipantDTO[] participants;
@@ -27,7 +29,6 @@ public class InfoDTO{
 
         info.gameMode = json.getString("gameMode");
         info.gameName = json.getString("gameName");
-        info.gameType = json.getString("gameType");
         info.gameVersion = json.getString("gameVersion");
         info.platformId = json.getString("platformId");
         info.tournamentCode = json.getString("tournamentCode");
@@ -56,5 +57,25 @@ public class InfoDTO{
             teams[i] = TeamDTO.fromJson(arr.getJSONObject(i));
         }
         return teams;
+    }
+    public String matchType(){
+        switch (queueId){
+            case 400:
+                return "NORMAL";
+            case 420:
+                return "RANKED";
+            case 440:
+                return "FLEX";
+            case 450:
+                return "ARAM";
+            case 830:
+                return "INTRO";
+            case 840:
+                return "BEGINNER";
+            case 850:
+                return "INTERMEDIATE";
+            default:
+                return null;
+        }
     }
 }

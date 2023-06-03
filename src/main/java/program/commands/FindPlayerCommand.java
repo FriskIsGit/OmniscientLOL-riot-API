@@ -29,9 +29,7 @@ public class FindPlayerCommand{
                         System.err.println("Rate limit!");
                     return;
                 }
-                synchronized (servers){
-                    servers.add(region);
-                }
+                servers.add(region);
             };
             futures[i] = executor.submit(runnableTask);
         }
