@@ -11,10 +11,7 @@ import org.apache.http.client.fluent.Request;
 import program.structs.*;
 
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class MatchCommand{
@@ -68,9 +65,6 @@ public class MatchCommand{
         SimpleMatch[] simpleMatches = new SimpleMatch[entries];
         for (int i = 0; i < entries; i++){
             MatchDTO aMatch = matches.get(i);
-            if(aMatch == null){
-                continue;
-            }
             SimpleMatch simpleMatch = new SimpleMatch(aMatch.metadata.matchId);
             ParticipantDTO[] participants = aMatch.info.participants;
             int index = 0;
@@ -129,12 +123,13 @@ public class MatchCommand{
         }
 
         int threads = ids.length;
-        List<MatchDTO> matches = Collections.synchronizedList(new ArrayList<>(threads));
         System.out.println("Retrieving matches, threads: " + threads);
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         Future<?>[] futures = new Future[threads];
+        Map<Integer, MatchDTO> orderedMap = Collections.synchronizedMap(new HashMap<>(threads));
         for (int i = 0; i < threads; i++){
             String matchId = ids[i];
+            int finalIndex = i;
             Runnable runnableTask = () -> {
                 String endpoint = URIPath.of(MatchV5.byMatchId).args(matchId);
                 String routingRegion = Riot.toRoutingRegion(Riot.REGION);
@@ -148,7 +143,8 @@ public class MatchCommand{
                 if (currMatch == null){
                     return;
                 }
-                matches.add(currMatch);
+
+                orderedMap.put(finalIndex, currMatch);
             };
             futures[i] = executor.submit(runnableTask);
         }
@@ -167,6 +163,20 @@ public class MatchCommand{
                 System.err.println("Timed out at match retrieving");
                 break;
             }
+        }
+
+        return hashMapToPureSortedList(orderedMap);
+    }
+
+    private List<MatchDTO> hashMapToPureSortedList(Map<Integer, MatchDTO> map){
+        int elements = map.size();
+        List<MatchDTO> matches = new ArrayList<>(elements);
+        for (int i = 0; i < elements; i++){
+            MatchDTO match = map.get(i);
+            if(match == null){
+                continue;
+            }
+            matches.add(match);
         }
         return matches;
     }
