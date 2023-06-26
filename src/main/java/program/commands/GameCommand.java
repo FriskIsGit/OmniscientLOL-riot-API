@@ -6,6 +6,7 @@ import lol.apis.SpectatorV4;
 import lol.apis.SummonerV4;
 import lol.champions.Champions;
 import lol.champions.Role;
+import lol.dtos.InfoDTO;
 import lol.dtos.LeagueEntryDTO;
 import lol.dtos.SummonerDTO;
 import lol.infos.CurrentGameInfo;
@@ -56,7 +57,7 @@ public class GameCommand{
             TimeElapsed timeElapsed = new TimeElapsed(System.currentTimeMillis() - gameInfo.gameStartTime);
             simpleGameInfo.append(timeElapsed).append(' ');
         }
-        simpleGameInfo.append(gameInfo.gameMode);
+        simpleGameInfo.append(InfoDTO.matchType((int) gameInfo.gameQueueConfigId));
         System.out.println(simpleGameInfo);
         String scoreboard = statsToPrettyString(summoner.id);
         System.out.println(scoreboard);

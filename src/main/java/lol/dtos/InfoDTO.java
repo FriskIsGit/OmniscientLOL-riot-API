@@ -58,7 +58,8 @@ public class InfoDTO{
         }
         return teams;
     }
-    public String matchType(){
+
+    public static String matchType(int queueId){
         switch (queueId){
             case 400:
                 return "NORMAL";
@@ -75,7 +76,11 @@ public class InfoDTO{
             case 850:
                 return "INTERMEDIATE";
             default:
+                System.err.println("Unknown queue id: " + queueId);
                 return null;
         }
+    }
+    public String matchType(){
+        return matchType(this.queueId);
     }
 }

@@ -13,6 +13,7 @@ import program.structs.*;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -58,14 +59,18 @@ public class MatchCommand{
             ids[i] = stringArr.getString(i);
         }
 
-        MatchDTO[] matches = retrieveMatchesByIds(ids);
-        if(matches.length == 0){
+        List<MatchDTO> matches = retrieveMatchesByIds(ids);
+        if(matches.size() == 0){
             System.out.println("No matches found.");
             return;
         }
-        SimpleMatch[] simpleMatches = new SimpleMatch[matches.length];
-        for (int i = 0; i < simpleMatches.length; i++){
-            MatchDTO aMatch = matches[i];
+        int entries = matches.size();
+        SimpleMatch[] simpleMatches = new SimpleMatch[entries];
+        for (int i = 0; i < entries; i++){
+            MatchDTO aMatch = matches.get(i);
+            if(aMatch == null){
+                continue;
+            }
             SimpleMatch simpleMatch = new SimpleMatch(aMatch.metadata.matchId);
             ParticipantDTO[] participants = aMatch.info.participants;
             int index = 0;
@@ -112,26 +117,24 @@ public class MatchCommand{
             sumD += simpleMatch.deaths;
             sumA += simpleMatch.assists;
         }
-        int entries = matches.length;
         String averageKDA = new SimpleMatch(sumK / entries, sumD / entries, sumA / entries).kda();
         matchesTable.writeSeparatorRow('-');
         matchesTable.writeToRow(Arrays.asList('-', '-', averageKDA, TimeElapsed.fromSeconds(allSeconds/entries), '-', '-'));
         System.out.println(matchesTable);
     }
 
-    private MatchDTO[] retrieveMatchesByIds(String[] ids){
+    private List<MatchDTO> retrieveMatchesByIds(String[] ids){
         if(ids.length == 0){
-            return new MatchDTO[0];
+            return Collections.emptyList();
         }
 
         int threads = ids.length;
-        MatchDTO[] matches = new MatchDTO[threads];
+        List<MatchDTO> matches = Collections.synchronizedList(new ArrayList<>(threads));
         System.out.println("Retrieving matches, threads: " + threads);
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         Future<?>[] futures = new Future[threads];
         for (int i = 0; i < threads; i++){
             String matchId = ids[i];
-            int finalIndex = i;
             Runnable runnableTask = () -> {
                 String endpoint = URIPath.of(MatchV5.byMatchId).args(matchId);
                 String routingRegion = Riot.toRoutingRegion(Riot.REGION);
@@ -145,7 +148,7 @@ public class MatchCommand{
                 if (currMatch == null){
                     return;
                 }
-                matches[finalIndex] = currMatch;
+                matches.add(currMatch);
             };
             futures[i] = executor.submit(runnableTask);
         }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import lol.Riot;
 import lol.apis.*;
 import lol.champions.Champions;
+import lol.dtos.ChampionMasteryDTO;
 import lol.dtos.LeagueEntryDTO;
 import lol.dtos.SummonerDTO;
 import lol.infos.ChampionInfo;
@@ -14,11 +15,13 @@ import lol.ranks.Queue;
 import program.commands.FindPlayerCommand;
 import program.commands.GameCommand;
 import program.commands.MatchCommand;
+import program.structs.TableFormat;
 
 import java.util.*;
 
 public class CLIProgram{
     private final Scanner scanner = new Scanner(System.in);
+    private final TableFormat playerInfo = new TableFormat(true);
 
     public void execute(){
         String input = "";
@@ -48,7 +51,8 @@ public class CLIProgram{
                         System.err.println("Missing name argument");
                         continue;
                     }
-                    fetchPlayerRank(commands[1]);
+                    fetchPlayerInfo(commands[1]);
+                    playerInfo.clear();
                     break;
                 case "regions":
                     System.out.println(Arrays.toString(Riot.REGIONS));
@@ -71,6 +75,9 @@ public class CLIProgram{
                 case "find":
                     List<String> servers = FindPlayerCommand.findPlayer(commands[1]);
                     System.out.println(servers);
+                    break;
+                case "portal":
+                    System.out.println("https://developer.riotgames.com/");
                     break;
                 default:
             }
@@ -109,7 +116,7 @@ public class CLIProgram{
         }
     }
 
-    private void fetchPlayerRank(String summonerName){
+    private void fetchPlayerInfo(String summonerName){
         SummonerDTO summoner = SummonerV4.fetchPlayerByName(summonerName);
         if(summoner == null){
             return;
@@ -134,11 +141,27 @@ public class CLIProgram{
             }
         }
         List<RankEntry> pastRanks = OPGG.retrievePastSeasonRank(Riot.REGION, summoner.name);
-        String info = "Level: " + summoner.summonerLevel + '\n' +
-                "DUO rank: " + duoRank.toSimpleRank() + '\n' +
-                "FLEX rank: " + flexRank.toSimpleRank() + '\n' +
-                "Other: " + pastRanks;
-        System.out.println(info);
+        playerInfo.addColumnDefinition("Level");
+        playerInfo.addColumnDefinition("DUO");
+        playerInfo.addColumnDefinition("FLEX");
+
+        List<ChampionMasteryDTO> masteries = ChampionMasteryV4.queryMostMastery(summoner.puuid);
+        for(ChampionMasteryDTO mastery : masteries){
+            playerInfo.addColumnDefinition(Champions.getChampionName(mastery.championId), 8);
+        }
+
+        List<Object> values = new ArrayList<>();
+        values.add(summoner.summonerLevel);
+        values.add(duoRank.toSimpleRank());
+        values.add(flexRank.toSimpleRank());
+
+        for(ChampionMasteryDTO mastery : masteries){
+            values.add(mastery.championPoints);
+        }
+
+        playerInfo.writeToRow(values);
+        System.out.println(playerInfo);
+        System.out.println("Other ranks: " + pastRanks);
     }
 
     private String[] fetchChampionNames(){

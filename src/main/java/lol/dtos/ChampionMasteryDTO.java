@@ -15,7 +15,7 @@ public class ChampionMasteryDTO{
         return fromJson(JSONObject.parseObject(json));
     }
 
-    private static ChampionMasteryDTO fromJson(JSONObject json){
+    public static ChampionMasteryDTO fromJson(JSONObject json){
         ChampionMasteryDTO championMastery = new ChampionMasteryDTO();
         championMastery.championId = json.getInteger("championId");
         championMastery.championLevel = json.getInteger("championLevel");

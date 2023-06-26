@@ -32,6 +32,12 @@ public class TableFormat{
         }
     }
 
+    public void clear(){
+        columnList.clear();
+        data.clear();
+        separators.clear();
+    }
+
     static class Separator{
         int index, summaryStart = -1;
         char separatingChr;
