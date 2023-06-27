@@ -62,19 +62,27 @@ public class InfoDTO{
     public static String matchType(int queueId){
         switch (queueId){
             case 400:
-                return "NORMAL";
+                return "DRAFT";
             case 420:
                 return "RANKED";
+            case 430:
+                return "BLIND";
             case 440:
                 return "FLEX";
             case 450:
                 return "ARAM";
+            case 460:
+                return "TWISTED_TREELINE";
+            case 700:
+                return "CLASH";
             case 830:
                 return "INTRO";
             case 840:
                 return "BEGINNER";
             case 850:
                 return "INTERMEDIATE";
+            case 900:
+                return "URF";
             default:
                 System.err.println("Unknown queue id: " + queueId);
                 return null;
