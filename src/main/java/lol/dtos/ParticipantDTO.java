@@ -88,13 +88,13 @@ public class ParticipantDTO{
         participant.doubleKills = json.getInteger("doubleKills");
         participant.unrealKills = json.getInteger("unrealKills");
 
-        participant.allInPings = json.getInteger("allInPings");
-        participant.commandPings = json.getInteger("commandPings");
-        participant.dangerPings = json.getInteger("dangerPings");
-        participant.enemyMissingPings = json.getInteger("enemyMissingPings");
-        participant.enemyVisionPings = json.getInteger("enemyVisionPings");
-        participant.getBackPings = json.getInteger("getBackPings");
-        participant.holdPings = json.getInteger("holdPings");
+        participant.allInPings = json.containsKey("allInPings") ? json.getInteger("allInPings") : -1;
+        participant.commandPings = json.containsKey("commandPings") ? json.getInteger("commandPings") : -1;
+        participant.dangerPings = json.containsKey("dangerPings") ? json.getInteger("dangerPings") : -1;
+        participant.enemyMissingPings = json.containsKey("enemyMissingPings") ? json.getInteger("enemyMissingPings") : -1;
+        participant.enemyVisionPings = json.containsKey("enemyVisionPings") ? json.getInteger("enemyVisionPings") : -1;
+        participant.getBackPings = json.containsKey("getBackPings") ? json.getInteger("getBackPings") : -1;
+        participant.holdPings = json.containsKey("holdPings") ? json.getInteger("holdPings") : -1;
 
         participant.championName = json.getString("championName");
         participant.individualPosition = json.getString("individualPosition");

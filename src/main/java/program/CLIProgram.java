@@ -58,6 +58,7 @@ public class CLIProgram{
                     System.out.println(Arrays.toString(Riot.REGIONS));
                     break;
                 case "matches":
+                case "games":
                     if(commands[1].isEmpty()){
                         System.err.println("Missing name argument");
                         continue;
@@ -165,6 +166,7 @@ public class CLIProgram{
         playerInfo.writeToRow(values);
         System.out.println(playerInfo);
         System.out.println("Other ranks: " + pastRanks);
+        System.out.println("Summoner id: " + summoner.id);
     }
 
     private String[] fetchChampionNames(){

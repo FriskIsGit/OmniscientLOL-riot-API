@@ -53,17 +53,17 @@ public class Challenges{
         }catch (NullPointerException ignored){
         }
 
-        challenges.immobilizeAndKillWithAlly = json.getInteger("immobilizeAndKillWithAlly");
-        challenges.knockEnemyIntoTeamAndKill = json.getInteger("knockEnemyIntoTeamAndKill");
-        challenges.jungleCsBefore10Minutes = json.getInteger("jungleCsBefore10Minutes");
-        challenges.turretTakedowns = json.getInteger("turretTakedowns");
-        challenges.saveAllyFromDeath = json.getInteger("saveAllyFromDeath");
-        challenges.mejaisFullStackInTime = json.getInteger("mejaisFullStackInTime");
-        challenges.perfectGame = json.getInteger("perfectGame");
-        challenges.soloKills = json.getInteger("soloKills");
-        challenges.skillshotsHit = json.getInteger("skillshotsHit");
-        challenges.skillshotsDodged = json.getInteger("skillshotsDodged");
-        challenges.turretPlatesTaken = json.getInteger("turretPlatesTaken");
+        challenges.immobilizeAndKillWithAlly = json.containsKey("immobilizeAndKillWithAlly") ? json.getInteger("immobilizeAndKillWithAlly") : -1;
+        challenges.knockEnemyIntoTeamAndKill = json.containsKey("knockEnemyIntoTeamAndKill") ? json.getInteger("knockEnemyIntoTeamAndKill") : -1;
+        challenges.jungleCsBefore10Minutes = json.containsKey("jungleCsBefore10Minutes") ? json.getInteger("jungleCsBefore10Minutes") : -1;
+        challenges.turretTakedowns = json.containsKey("turretTakedowns") ? json.getInteger("turretTakedowns") : -1;
+        challenges.saveAllyFromDeath = json.containsKey("saveAllyFromDeath") ? json.getInteger("saveAllyFromDeath") : -1;
+        challenges.mejaisFullStackInTime = json.containsKey("mejaisFullStackInTime") ? json.getInteger("mejaisFullStackInTime") : -1;
+        challenges.perfectGame = json.containsKey("perfectGame") ? json.getInteger("perfectGame") : -1;
+        challenges.soloKills = json.containsKey("soloKills") ? json.getInteger("soloKills") : -1;
+        challenges.skillshotsHit = json.containsKey("skillshotsHit") ? json.getInteger("skillshotsHit") : -1;
+        challenges.skillshotsDodged = json.containsKey("skillshotsDodged") ? json.getInteger("skillshotsDodged") : -1;
+        challenges.turretPlatesTaken = json.containsKey("turretPlatesTaken") ? json.getInteger("turretPlatesTaken") : -1;
         challenges.unseenRecalls = json.getInteger("unseenRecalls");
         challenges.wardTakedowns = json.getInteger("wardTakedowns");
         challenges.wardsGuarded = json.getInteger("wardsGuarded");

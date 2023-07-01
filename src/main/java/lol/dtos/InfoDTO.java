@@ -24,7 +24,7 @@ public class InfoDTO{
         InfoDTO info = new InfoDTO();
         info.gameCreation = json.getLong("gameCreation");
         info.gameStartTimestamp = json.getLong("gameStartTimestamp");
-        info.gameEndTimestamp = json.getLong("gameEndTimestamp");
+        info.gameEndTimestamp = json.containsKey("gameEndTimestamp") ? json.getLong("gameEndTimestamp") : -1;
         info.gameId = json.getLong("gameId");
 
         info.gameMode = json.getString("gameMode");
@@ -35,7 +35,13 @@ public class InfoDTO{
 
         info.mapId = json.getInteger("mapId");
         info.queueId = json.getInteger("queueId");
-        info.gameDuration = json.getInteger("gameDuration"); //in seconds
+
+        info.gameDuration = json.getInteger("gameDuration");
+        //determine season - gameDuration is provided in seconds but used to be millis
+        int season = gameVersionToSeason(info.gameVersion);
+        if(season <= 11){
+            info.gameDuration /= 1000;
+        }
 
         info.participants = toParticipantsArr(json.getJSONArray("participants"));
         info.teams = toTeamsArr(json.getJSONArray("teams"));
@@ -57,6 +63,15 @@ public class InfoDTO{
             teams[i] = TeamDTO.fromJson(arr.getJSONObject(i));
         }
         return teams;
+    }
+
+    public static int gameVersionToSeason(String gameVersion){
+        if(gameVersion == null){
+            throw new NullPointerException("Unknown game version");
+        }
+        int firstDot = gameVersion.indexOf('.');
+        String toParse = gameVersion.substring(0, firstDot);
+        return Integer.parseInt(toParse);
     }
 
     public static String matchType(int queueId){

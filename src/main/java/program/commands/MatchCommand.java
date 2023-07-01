@@ -134,7 +134,7 @@ public class MatchCommand{
                 String endpoint = URIPath.of(MatchV5.byMatchId).args(matchId);
                 String routingRegion = Riot.toRoutingRegion(Riot.REGION);
                 Request request = Riot.newRequest(routingRegion, endpoint);
-                SimpleResponse response = SimpleResponse.performRequest(request).expect("NO RESPONSE");
+                SimpleResponse response = SimpleResponse.performRequest(request).expect("No response for game_id: " + matchId);
                 if(response.code != 200){
                     System.out.println(response.body);
                     return;
@@ -146,6 +146,7 @@ public class MatchCommand{
 
                 orderedMap.put(finalIndex, currMatch);
             };
+
             futures[i] = executor.submit(runnableTask);
         }
         long st = System.currentTimeMillis();
@@ -160,7 +161,8 @@ public class MatchCommand{
                 }
                 future.get(timeOutMs - timeSpent, TimeUnit.MILLISECONDS);
             }catch (InterruptedException | ExecutionException | TimeoutException e){
-                System.err.println("Timed out at match retrieving");
+                e.printStackTrace();
+                System.err.println("Exception: Timed out at match retrieving");
                 break;
             }
         }
