@@ -51,7 +51,7 @@ public class CLIProgram{
                         System.err.println("Missing name argument");
                         continue;
                     }
-                    fetchPlayerInfo(commands[1]);
+                    fetchPlayerInfo(commands[1].trim());
                     playerInfo.clear();
                     break;
                 case "regions":
@@ -78,6 +78,9 @@ public class CLIProgram{
                     break;
                 case "portal":
                     System.out.println("https://developer.riotgames.com/");
+                    break;
+                case "replay":
+                    Replays.retrieveGameById(commands[1]);
                     break;
                 default:
             }
@@ -145,7 +148,7 @@ public class CLIProgram{
         playerInfo.addColumnDefinition("DUO");
         playerInfo.addColumnDefinition("FLEX");
 
-        List<ChampionMasteryDTO> masteries = ChampionMasteryV4.queryMostMastery(summoner.puuid);
+        List<ChampionMasteryDTO> masteries = ChampionMasteryV4.queryMostMastery(summoner.id);
         for(ChampionMasteryDTO mastery : masteries){
             playerInfo.addColumnDefinition(Champions.getChampionName(mastery.championId), 8);
         }
