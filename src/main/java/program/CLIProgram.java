@@ -79,9 +79,9 @@ public class CLIProgram{
                 case "portal":
                     System.out.println("https://developer.riotgames.com/");
                     break;
-                case "replay":
+                /*case "replay":
                     Replays.retrieveGameById(commands[1]);
-                    break;
+                    break;*/
                 default:
             }
         }
