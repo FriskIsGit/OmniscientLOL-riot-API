@@ -247,7 +247,7 @@ public class GameCommand{
                 }
                 future.get(timeOutMs - timeSpent, TimeUnit.MILLISECONDS);
             }catch (InterruptedException | ExecutionException | TimeoutException e){
-                System.err.println("Timed out at rank complementing");
+                System.err.println(e.getMessage());
                 break;
             }
         }

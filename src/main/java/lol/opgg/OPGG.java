@@ -96,16 +96,18 @@ public class OPGG{
     }
 
     private static RankEntry toRankEntry(String mixedSeason, String mixedRank){
-        int numSt = -1;
+        StringBuilder season = new StringBuilder();
+        boolean foundDigits = false;
         for (int i = 0; i < mixedSeason.length(); i++){
             char chr = mixedSeason.charAt(i);
             if(Character.isDigit(chr)){
-                if(numSt == -1){
-                    numSt = i;
-                }
+                foundDigits = true;
+                season.append(chr);
+            }else if(foundDigits){
+                break;
             }
         }
-        int yearOrSeason = Integer.parseInt(mixedSeason.substring(numSt));
+        int yearOrSeason = Integer.parseInt(season.toString());
 
         int tierSt = -1;
         int from = 0;

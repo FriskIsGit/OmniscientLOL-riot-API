@@ -1,7 +1,7 @@
 package lol.ranks;
 
 public enum Queue{
-    RANKED_SOLO_5x5, RANKED_FLEX_SR, RANKED_TFT_DOUBLE_UP, TFT;
+    RANKED_SOLO_5x5, RANKED_FLEX_SR, RANKED_TFT_DOUBLE_UP, TFT, ARENA, UNKNOWN;
     public static Queue fromString(String queue){
         switch (queue){
             case "RANKED_FLEX_SR":
@@ -16,8 +16,11 @@ public enum Queue{
             case "RANKED_TFT":
             case "TFT":
                 return TFT;
+            case "CHERRY":
+                return ARENA;
             default:
-                throw new IllegalArgumentException("Unknown queue type");
+                System.err.println("Unknown queue type: " + queue);
+                return UNKNOWN;
         }
     }
 }
