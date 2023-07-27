@@ -85,8 +85,6 @@ public class MatchCommand{
                     || (index >= teams.leftTeam.length && teamDTOs[1].win);
             simpleMatch.length = TimeElapsed.fromSeconds(aMatch.info.gameDuration);
             simpleMatch.type = aMatch.info.matchType();
-            if(simpleMatch.type == null)
-                System.out.println(aMatch.info.queueId);
             simpleMatch.queueId = aMatch.info.queueId;
             simpleMatches[i] = simpleMatch;
         }

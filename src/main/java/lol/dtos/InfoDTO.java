@@ -98,6 +98,8 @@ public class InfoDTO{
                 return "INTERMEDIATE";
             case 900:
                 return "URF";
+            case 1700:
+                return "ARENA";
             default:
                 System.err.println("Unknown queue id: " + queueId);
                 return null;

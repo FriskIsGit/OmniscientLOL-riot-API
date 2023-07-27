@@ -9,6 +9,7 @@ public class LeagueRank{
             SILVER = 13,
             GOLD = 17,
             PLATINUM = 21,
+            EMERALD = 23,
             DIAMOND = 25,
             MASTER = 26,
             GRANDMASTER = 28,
@@ -73,6 +74,8 @@ public class LeagueRank{
                 return GOLD;
             case "PLATINUM":
                 return PLATINUM;
+            case "EMERALD":
+                return EMERALD;
             case "DIAMOND":
                 return DIAMOND;
             case "MASTER":
@@ -183,6 +186,7 @@ public class LeagueRank{
             case SILVER:
             case GOLD:
             case PLATINUM:
+            case EMERALD:
             case DIAMOND:
                 if(division < 1 || division > 5){
                     throw new IllegalArgumentException("Invalid division for tier: " + tier + ". Must be 1-5");
@@ -208,6 +212,8 @@ public class LeagueRank{
                 return "CH";
             case DIAMOND:
                 return "D" + division;
+            case EMERALD:
+                return "E" + division;
             case PLATINUM:
                 return "P" + division;
             case GOLD:
@@ -219,7 +225,7 @@ public class LeagueRank{
             case IRON:
                 return "I" + division;
         }
-        throw new IllegalStateException("Unreachable");
+        throw new IllegalStateException("Tier " + tier + " couldn't be resolved to a rank");
     }
     public int getDivision(){
         return division;
