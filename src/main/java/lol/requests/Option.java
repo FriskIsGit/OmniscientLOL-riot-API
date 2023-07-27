@@ -34,6 +34,9 @@ public class Option<T>{
     public T get(){
         return val;
     }
+    public T getOrDefault(T def){
+        return isSome ? val : def;
+    }
 
     public void set(T object){
         if(object == null){

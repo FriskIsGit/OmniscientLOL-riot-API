@@ -15,6 +15,7 @@ import lol.opgg.OPGG;
 import lol.opgg.RankEntry;
 import lol.ranks.LeagueRank;
 import lol.ranks.Queue;
+import lol.requests.Option;
 import lol.spells.Spell;
 import program.structs.TimeElapsed;
 import program.structs.SummonerEntry;
@@ -81,8 +82,8 @@ public class GameCommand{
         Player[] players = new Player[5];
         //convert champion names to ids
         for (int i = 0; i < len; i++){
-            int champId = Champions.getChampionId(summoners[i].championName).expect("Unknown champion name");
-            players[i] = new Player(champId);
+            Option<Integer> maybeId = Champions.getChampionId(summoners[i].championName);
+            players[i] = new Player(maybeId.getOrDefault(-1));
         }
         RoleState state = new RoleState();
 
@@ -319,6 +320,9 @@ public class GameCommand{
     }
 
     private static StringBuilder padToLength(String str, int length){
+        if(str == null){
+            str = "UNKNOWN";
+        }
         StringBuilder padded = new StringBuilder(str);
         int diff = length - str.length();
         for (int i = 0; i < diff; i++){
@@ -365,6 +369,9 @@ public class GameCommand{
             CurrentGameParticipant participant = participants[i];
             LeagueEntryDTO[] ranks = LeagueV4.leagueById(Riot.REGION, participant.summonerId);
             String champName = Champions.getChampionName(participant.championId);
+            if(champName == null){
+                System.err.println("Unknown champion id: " + participant.championId);
+            }
             LeagueRank duoRank = new LeagueRank(LeagueRank.UNRANKED);
             LeagueRank flexRank = new LeagueRank(LeagueRank.UNRANKED);
             for (LeagueEntryDTO rank : ranks){

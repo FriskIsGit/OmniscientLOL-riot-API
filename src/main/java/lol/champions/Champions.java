@@ -96,7 +96,11 @@ public class Champions{
             String name = line.substring(0, colon);
             String rolesStr = line.substring(colon + 1);
             String[] roleSplit = rolesStr.split(",");
-            int id = nameToId.get(name);
+            Integer id = nameToId.get(name);
+            if(id == null){
+                continue;
+            }
+
             Role[] roles = new Role[roleSplit.length];
             for (int i = 0; i < roles.length; i++){
                 char identifier = roleSplit[i].charAt(0);

@@ -80,6 +80,7 @@ MissFortune:B
 Wukong:J
 Mordekaiser:T
 Morgana:S
+Naafiri:M,J
 Nami:S
 Nasus:T
 Nautilus:S

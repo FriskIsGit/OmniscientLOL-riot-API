@@ -71,4 +71,10 @@ public class LeagueRankToTierTest{
         assertSame(LeagueRank.BRONZE, rank.getTier());
         assertSame(2, rank.getDivision());
     }
+    @Test
+    public void dontCrashTest(){
+        for (int i = 0; i < LeagueRank.CHALLENGER + 1; i++){
+            LeagueRank.fromDivisionScore(i);
+        }
+    }
 }

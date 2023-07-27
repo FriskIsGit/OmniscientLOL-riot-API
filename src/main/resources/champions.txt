@@ -80,6 +80,7 @@ MissFortune:21
 Wukong:62
 Mordekaiser:82
 Morgana:25
+Naafiri:950
 Nami:267
 Nasus:75
 Nautilus:111

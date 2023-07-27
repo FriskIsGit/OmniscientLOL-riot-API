@@ -34,7 +34,7 @@ public class OPGG{
         String url = URIPath.of(endpoint).args(region, name);
         Request request = Request.Get(url).addHeader("Accept", "text/html")
                 .connectTimeout(2000)
-                .socketTimeout(4000);
+                .socketTimeout(5000);
         Option<SimpleResponse> responseOption = SimpleResponse.performRequest(request);
         if(!responseOption.isSome()){
             System.err.println("There was no response");
