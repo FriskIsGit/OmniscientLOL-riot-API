@@ -27,7 +27,7 @@ public class LeagueRankAverageTest{
         int total = gold3.divisionScore() + diamond3.divisionScore();
         int average = total / 2;
         LeagueRank actual = LeagueRank.fromDivisionScore(average);
-        assertSame(LeagueRank.PLATINUM, actual.getTier());
+        assertSame(LeagueRank.EMERALD, actual.getTier());
         assertEquals(3, actual.getDivision());
     }
     @Test
@@ -57,14 +57,14 @@ public class LeagueRankAverageTest{
         int total = b4.divisionScore() + d4.divisionScore();
         int average = total / 2;
         LeagueRank actual = LeagueRank.fromDivisionScore(average);
-        assertSame(LeagueRank.GOLD, actual.getTier());
+        assertSame(LeagueRank.PLATINUM, actual.getTier());
         assertEquals(4, actual.getDivision());
     }
     @Test
     public void threeRanks1(){
         LeagueRank b3 = new LeagueRank(LeagueRank.BRONZE, 3);
         LeagueRank g3 = new LeagueRank(LeagueRank.GOLD, 3);
-        LeagueRank d3 = new LeagueRank(LeagueRank.DIAMOND, 3);
+        LeagueRank d3 = new LeagueRank(LeagueRank.EMERALD, 3);
         int total = b3.divisionScore() + g3.divisionScore() + d3.divisionScore();
         int average = total / 3;
         LeagueRank actual = LeagueRank.fromDivisionScore(average);
@@ -118,6 +118,6 @@ public class LeagueRankAverageTest{
         LeagueRank rank = LeagueRank.fromDivisionScore(average);
         System.out.println(rank);
         assertSame(LeagueRank.GOLD, rank.getTier());
-        assertEquals(2, rank.getDivision());
+        assertEquals(1, rank.getDivision());
     }
 }

@@ -1,19 +1,20 @@
 package lol.ranks;
 
+// https://images.contentstack.io/v3/assets/blt731acb42bb3d1659/blt2a8d492cdc35e583/647e7feeeb65a1ce636e1098/Live_end_of_Season_CHART_03.jpg
 public class LeagueRank{
-    //tier is one of the below
+    // tier always represents 1st division
     public static final int
             UNRANKED = 0,
-            IRON = 5,
-            BRONZE = 9,
-            SILVER = 13,
-            GOLD = 17,
-            PLATINUM = 21,
-            EMERALD = 23,
-            DIAMOND = 25,
-            MASTER = 26,
-            GRANDMASTER = 28,
-            CHALLENGER = 30;
+            IRON = 4,     //+4
+            BRONZE = 12,
+            SILVER = 17,  //+1
+            GOLD = 21,
+            PLATINUM = 25,
+            EMERALD = 30, //+1
+            DIAMOND = 39, //+5
+            MASTER = 42,
+            GRANDMASTER = 45,
+            CHALLENGER = 49;
 
     private Queue queue; //queue could be modifiable on the fly because it doesn't need to be validated
     private final int tier;
@@ -26,17 +27,18 @@ public class LeagueRank{
             case SILVER:
             case GOLD:
             case PLATINUM:
+            case EMERALD:
             case DIAMOND:
-                return tier - division;
+                return tier - division + 1;
             case MASTER:
-                return 26;
+                return MASTER;
             case GRANDMASTER:
-                return 28;
+                return GRANDMASTER;
             case CHALLENGER:
-                return 30;
+                return CHALLENGER;
             case UNRANKED:
             default:
-                return 0;
+                return UNRANKED;
         }
     }
     public int divisionScore(){
@@ -91,38 +93,57 @@ public class LeagueRank{
 
     //for old ranks
     public static LeagueRank fromDivisionScore(int divisionScore){
-        if(divisionScore == 0){
+        if(divisionScore <= IRON-4){
             return new LeagueRank(UNRANKED);
         }
-        //divisionScore for IRON4 is 1
-        if(1 <= divisionScore && divisionScore <= 4){
-            return new LeagueRank(IRON, IRON-divisionScore);
+        if(divisionScore <= IRON){
+            return new LeagueRank(IRON, IRON-divisionScore + 1);
         }
-        if(5 <= divisionScore && divisionScore <= 8){
-            return new LeagueRank(BRONZE, BRONZE-divisionScore);
+        if(divisionScore <= BRONZE-4){ // exactly between IRON & BRONZE
+            boolean scalesUp = scalesUp(IRON+1, BRONZE-4, divisionScore);
+            return scalesUp ? new LeagueRank(BRONZE, 4) : new LeagueRank(IRON, 1);
         }
-        if(9 <= divisionScore && divisionScore <= 12){
-            return new LeagueRank(SILVER, SILVER-divisionScore);
+        if(divisionScore <= BRONZE){
+            return new LeagueRank(BRONZE, BRONZE-divisionScore + 1);
         }
-        if(13 <= divisionScore && divisionScore <= 16){
-            return new LeagueRank(GOLD, GOLD-divisionScore);
+        if(divisionScore <= SILVER-4){ // exactly between BRONZE & SILVER
+            boolean scalesUp = scalesUp(BRONZE+1, SILVER-4, divisionScore);
+            return scalesUp ? new LeagueRank(SILVER, 4) : new LeagueRank(BRONZE, 1);
         }
-        if(17 <= divisionScore && divisionScore <= 20){
-            return new LeagueRank(PLATINUM, PLATINUM-divisionScore);
+        if(divisionScore <= SILVER){
+            return new LeagueRank(SILVER, SILVER-divisionScore + 1);
         }
-        if(21 <= divisionScore && divisionScore <= 25){
-            return new LeagueRank(DIAMOND, Math.max(1, DIAMOND-divisionScore));
+        if(divisionScore <= GOLD){
+            return new LeagueRank(GOLD, GOLD-divisionScore + 1);
         }
-        if(MASTER <= divisionScore && divisionScore <= 27){
+        if(divisionScore <= PLATINUM){
+            return new LeagueRank(PLATINUM, PLATINUM-divisionScore + 1);
+        }
+        if(divisionScore <= EMERALD-4){ // exactly between PLATINUM & EMERALD
+            boolean scalesUp = scalesUp(PLATINUM+1, EMERALD-4, divisionScore);
+            return scalesUp ? new LeagueRank(EMERALD, 4) : new LeagueRank(PLATINUM, 1);
+        }
+        if(divisionScore <= EMERALD){
+            return new LeagueRank(EMERALD, EMERALD-divisionScore + 1);
+        }
+        if(divisionScore <= DIAMOND-4){ // exactly between EMERALD & DIAMOND
+            boolean scalesUp = scalesUp(EMERALD+1, DIAMOND-4, divisionScore);
+            return scalesUp ? new LeagueRank(DIAMOND, 4) : new LeagueRank(EMERALD, 1);
+        }
+        if(divisionScore <= DIAMOND){
+            return new LeagueRank(DIAMOND, DIAMOND-divisionScore + 1);
+        }
+        if(divisionScore < MASTER){ //exactly between DIAMOND & MASTER
+            boolean scalesUp = scalesUp(DIAMOND+1, MASTER, divisionScore);
+            return scalesUp ? new LeagueRank(MASTER) : new LeagueRank(DIAMOND, 1);
+        }
+        if(divisionScore < GRANDMASTER){
             return new LeagueRank(MASTER);
         }
-        if(GRANDMASTER <= divisionScore && divisionScore <= 29){
+        if(divisionScore < CHALLENGER){
             return new LeagueRank(GRANDMASTER);
         }
-        if(CHALLENGER <= divisionScore){
-            return new LeagueRank(CHALLENGER);
-        }
-        throw new IllegalStateException("Invalid division score: " + divisionScore);
+        return new LeagueRank(CHALLENGER);
     }
 
     public LeagueRank(int tier, int division, Queue queue){
@@ -160,6 +181,12 @@ public class LeagueRank{
             default:
                 throw new IllegalArgumentException("This tier must have a division: " + tier);
         }
+    }
+
+    //inclusive range
+    private static boolean scalesUp(int lower, int higher, int val){
+        double mid = (lower + higher) / 2D;
+        return mid <= val;
     }
 
     public boolean higherThan(LeagueRank right){
