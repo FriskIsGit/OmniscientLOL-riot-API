@@ -4,8 +4,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class SimpleResponse{
     public int code;
@@ -51,26 +51,25 @@ public class SimpleResponse{
         if(inputStream == null){
             return "";
         }
-        byte[] buffer = new byte[32768];
-        try {
-            int writeOffset = 0;
-            while (inputStream.available() != 0) {
-                int available = inputStream.available();
-                if(available + writeOffset < buffer.length){
-                    int currentRead = inputStream.read(buffer, writeOffset, available);
-                    writeOffset += currentRead;
-                }else{
-                    byte[] tempBuffer = new byte[buffer.length<<1];
-                    System.arraycopy(buffer, 0, tempBuffer, 0, writeOffset);
-                    buffer = tempBuffer;
-                    tempBuffer = null;
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+        String line;
+        StringBuilder content = new StringBuilder();
+        boolean oneError = false;
+        while (true) {
+            try{
+                if ((line = br.readLine()) == null){
+                    break;
                 }
+                content.append(line).append('\n');
+            }catch (IOException e){
+                if(oneError){
+                    break;
+                }
+                oneError = true;
+                System.out.println(e.getMessage());
             }
-            return new String(buffer, 0, writeOffset);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            System.err.println("Stream closed?");
         }
-        return null;
+        return content.toString();
     }
 }

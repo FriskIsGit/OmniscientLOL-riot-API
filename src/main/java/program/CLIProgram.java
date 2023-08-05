@@ -20,6 +20,7 @@ import program.structs.TableFormat;
 import java.util.*;
 
 public class CLIProgram{
+    public static final String VERSION = "5.8.23";
     private final Scanner scanner = new Scanner(System.in, "UTF-8");
     private final TableFormat playerInfo = new TableFormat(true);
 
@@ -28,7 +29,6 @@ public class CLIProgram{
         while(!input.equals("exit")){
             input = scanner.nextLine();
             String[] commands = twoSplit(input);
-            System.out.println(Arrays.toString(commands));
             switch (commands[0].toLowerCase()){
                 case "g":
                 case "game":
@@ -44,6 +44,7 @@ public class CLIProgram{
                 case "region":
                 case "r":
                     Riot.setRegion(commands[1]);
+                    System.out.println(Arrays.toString(commands));
                     break;
                 case "player":
                 case "p":
@@ -79,6 +80,9 @@ public class CLIProgram{
                     break;
                 case "portal":
                     System.out.println("https://developer.riotgames.com/");
+                    break;
+                case "version":
+                    System.out.println(VERSION);
                     break;
                 /*case "replay":
                     Replays.retrieveGameById(commands[1]);
@@ -203,7 +207,7 @@ public class CLIProgram{
 
     public void printCommands(){
         System.out.print("Available commands: ");
-        String[] commands = {"game", "player", "find", "match", "matches", "region", "regions"};
+        String[] commands = {"game", "player", "find", "match", "matches", "region", "regions", "portal", "version"};
         System.out.println(Arrays.toString(commands));
     }
 }

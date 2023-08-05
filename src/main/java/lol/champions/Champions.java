@@ -34,8 +34,6 @@ public class Champions{
         if(isJar){
             InputStream is = Champions.class.getResourceAsStream("/champions.txt");
             String champs = SimpleResponse.streamToString(is);
-            if(champs == null)
-                return;
             List<String> lines = readAllLines(champs);
             readChampionsFromList(lines);
         }else{
@@ -69,9 +67,6 @@ public class Champions{
         if(isJar){
             InputStream is = Champions.class.getResourceAsStream("/roles.txt");
             String roles = SimpleResponse.streamToString(is);
-            if(roles == null)
-                return;
-
             List<String> lines = readAllLines(roles);
             readRolesFromList(lines);
         }else{

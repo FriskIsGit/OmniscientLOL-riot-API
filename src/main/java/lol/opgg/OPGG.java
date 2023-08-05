@@ -7,6 +7,10 @@ import lol.requests.SimpleResponse;
 import lol.requests.URIPath;
 import org.apache.http.client.fluent.Request;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +36,8 @@ public class OPGG{
             return entries;
         }
         String url = URIPath.of(endpoint).args(region, name);
-        Request request = Request.Get(url).addHeader("Accept", "text/html")
+        Request request = Request.Get(url)
+                .addHeader("Accept", "text/html")
                 .connectTimeout(2000)
                 .socketTimeout(5000);
         Option<SimpleResponse> responseOption = SimpleResponse.performRequest(request);
@@ -52,7 +57,7 @@ public class OPGG{
             System.out.println("More tiers are present in the html.");
         }
         if(tiers == -1){
-            System.err.println("There's no tier-list for user (new op.gg retrieval): " + name);
+            System.err.println("There's no tier-list for user: " + name);
             return Collections.emptyList();
         }
         List<RankEntry> rankEntries;
@@ -64,6 +69,18 @@ public class OPGG{
         }
         summonersToDuoRanks.put(region + name, rankEntries);
         return rankEntries;
+    }
+
+    private static void writeToLogFile(String name, String response){
+        File log = new File(name + "_log.txt");
+        try{
+            boolean success = log.createNewFile();
+            if(success){
+                Files.write(log.toPath(), response.getBytes(StandardCharsets.UTF_8));
+            }
+        }catch (IOException e){
+            System.err.println(e.getMessage());
+        }
     }
 
     public static List<RankEntry> parseLiElements(String html, int from){

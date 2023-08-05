@@ -1,11 +1,13 @@
 package lol.dtos;
 
 import com.alibaba.fastjson.JSONObject;
+import lol.Riot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SummonerDTO{
-    private static final HashMap<String, SummonerDTO> summonerNameCache = new HashMap<>();
+    private static final ArrayList<RegionalSummoner> summonerNameCache = new ArrayList<>();
     private static final HashMap<String, SummonerDTO> summonerPUUIDCache = new HashMap<>();
     private static final HashMap<String, SummonerDTO> summonerIDCache = new HashMap<>();
 
@@ -15,16 +17,11 @@ public class SummonerDTO{
     public static void add(SummonerDTO summoner){
         if(summoner == null)
             return;
-        summonerNameCache.put(summoner.name, summoner);
+        summonerNameCache.add(new RegionalSummoner(summoner, Riot.REGION));
         summonerPUUIDCache.put(summoner.puuid, summoner);
         summonerIDCache.put(summoner.id, summoner);
     }
     //returns null if not found
-    public static SummonerDTO getByName(String name){
-        if(name == null)
-            return null;
-        return summonerNameCache.get(name);
-    }
     public static SummonerDTO getByPuuid(String puuid){
         if(puuid == null)
             return null;
@@ -34,6 +31,16 @@ public class SummonerDTO{
         if(id == null)
             return null;
         return summonerIDCache.get(id);
+    }
+    public static SummonerDTO getByName(String name){
+        if(name == null)
+            return null;
+        for(RegionalSummoner regSummoner : summonerNameCache){
+            if(regSummoner.region.equals(Riot.REGION) && regSummoner.summoner.name.equals(name)){
+                return regSummoner.summoner;
+            }
+        }
+        return null;
     }
 
     public static SummonerDTO fromJson(String json){
@@ -61,6 +68,23 @@ public class SummonerDTO{
                 ", profileIconId=" + profileIconId +
                 ", revisionDate=" + revisionDate +
                 ", summonerLevel=" + summonerLevel +
+                '}';
+    }
+}
+class RegionalSummoner{
+    public SummonerDTO summoner;
+    public String region;
+
+    public RegionalSummoner(SummonerDTO summoner, String region){
+        this.region = region;
+        this.summoner = summoner;
+    }
+
+    @Override
+    public String toString(){
+        return "RegionSummoner{" +
+                "summoner=" + summoner +
+                ", region='" + region + '\'' +
                 '}';
     }
 }
