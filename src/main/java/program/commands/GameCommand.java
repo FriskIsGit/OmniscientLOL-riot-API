@@ -364,36 +364,58 @@ public class GameCommand{
     //retrieves ranks and basic information about game participants
     private static SummonerEntry[] getSummonerEntries(CurrentGameParticipant[] participants){
         int len = participants.length;
+        ExecutorService executor = Executors.newFixedThreadPool(len);
+        Future<?>[] futures = new Future[len];
         SummonerEntry[] team = new SummonerEntry[len];
         for (int i = 0; i < len; i++){
-            CurrentGameParticipant participant = participants[i];
-            LeagueEntryDTO[] ranks = LeagueV4.leagueById(Riot.REGION, participant.summonerId);
-            String champName = Champions.getChampionName(participant.championId);
-            if(champName == null){
-                System.err.println("Unknown champion id: " + participant.championId);
-            }
-            LeagueRank duoRank = new LeagueRank(LeagueRank.UNRANKED);
-            LeagueRank flexRank = new LeagueRank(LeagueRank.UNRANKED);
-            for (LeagueEntryDTO rank : ranks){
-                Queue queueType = Queue.fromString(rank.queueType);
-                if (queueType == Queue.RANKED_SOLO_5x5){
-                    duoRank = new LeagueRank(
-                            LeagueRank.tier(rank.tier),
-                            LeagueRank.division(rank.rank),
-                            Queue.RANKED_SOLO_5x5
-                    );
-                }else if(queueType == Queue.RANKED_FLEX_SR){
-                    flexRank = new LeagueRank(
-                            LeagueRank.tier(rank.tier),
-                            LeagueRank.division(rank.rank),
-                            Queue.RANKED_FLEX_SR
-                    );
+            final int index = i;
+            Runnable task = () -> {
+                CurrentGameParticipant participant = participants[index];
+                LeagueEntryDTO[] ranks = LeagueV4.leagueById(Riot.REGION, participant.summonerId);
+                String champName = Champions.getChampionName(participant.championId);
+                if(champName == null){
+                    System.err.println("Unknown champion id: " + participant.championId);
                 }
+                LeagueRank duoRank = new LeagueRank(LeagueRank.UNRANKED);
+                LeagueRank flexRank = new LeagueRank(LeagueRank.UNRANKED);
+                for (LeagueEntryDTO rank : ranks){
+                    Queue queueType = Queue.fromString(rank.queueType);
+                    if (queueType == Queue.RANKED_SOLO_5x5){
+                        duoRank = new LeagueRank(
+                                LeagueRank.tier(rank.tier),
+                                LeagueRank.division(rank.rank),
+                                Queue.RANKED_SOLO_5x5
+                        );
+                    }else if(queueType == Queue.RANKED_FLEX_SR){
+                        flexRank = new LeagueRank(
+                                LeagueRank.tier(rank.tier),
+                                LeagueRank.division(rank.rank),
+                                Queue.RANKED_FLEX_SR
+                        );
+                    }
+                }
+                Spell spell1 = Spell.from(participant.spell1Id);
+                Spell spell2 = Spell.from(participant.spell2Id);
+                SummonerEntry summonerEntry = new SummonerEntry(participant.summonerId, champName, duoRank, flexRank, spell1, spell2);
+                team[index] = summonerEntry;
+            };
+            futures[index] = executor.submit(task);
+        }
+        long st = System.currentTimeMillis();
+        final int timeOutMs = 5000;
+        //block until all threads are finished
+        for(Future<?> future : futures){
+            try{
+                long timeSpent = System.currentTimeMillis() - st;
+                if(timeSpent > timeOutMs){
+                    System.err.println("Timed out at game retrieving");
+                    break;
+                }
+                future.get(timeOutMs - timeSpent, TimeUnit.MILLISECONDS);
+            }catch (InterruptedException | ExecutionException | TimeoutException e){
+                System.err.println(e.getMessage());
+                break;
             }
-            Spell spell1 = Spell.from(participant.spell1Id);
-            Spell spell2 = Spell.from(participant.spell2Id);
-            SummonerEntry summonerEntry = new SummonerEntry(participant.summonerId, champName, duoRank, flexRank, spell1, spell2);
-            team[i] = summonerEntry;
         }
         return team;
     }
