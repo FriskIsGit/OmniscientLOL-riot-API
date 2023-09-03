@@ -20,7 +20,7 @@ import program.structs.TableFormat;
 import java.util.*;
 
 public class CLIProgram{
-    public static final String VERSION = "5.8.23";
+    public static final String VERSION = "3.9.23";
     private final Scanner scanner = new Scanner(System.in, "UTF-8");
     private final TableFormat playerInfo = new TableFormat(true);
 

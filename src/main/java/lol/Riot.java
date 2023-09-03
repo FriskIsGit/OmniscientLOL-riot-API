@@ -1,5 +1,6 @@
 package lol;
 
+import lol.utils.PathUtils;
 import org.apache.http.client.fluent.Request;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class Riot{
     public static final String[] REGIONS = {
             "na1", "eun1", "euw1", "jp1", "kr", "la1", "la2",
             "br1", "oc1", "ph2", "ru", "sg2", "th2", "tr1", "tw2", "vn2"};
-    private static String RIOT_API_KEY = "RGAPI-d9b5b6e0-3930-4209-93f6-db03e459b83b";
+    private static String RIOT_API_KEY;
     public static String REGION = "eun1";
 
     static{
@@ -79,7 +80,7 @@ public class Riot{
     }
     private static void loadAPIKey(){
         URL url = Riot.class.getProtectionDomain().getCodeSource().getLocation();
-        String executingPath = convertURLToString(url);
+        String executingPath = PathUtils.convertURLToString(url);
         int lastSlash = executingPath.lastIndexOf('/');
         executingPath = executingPath.substring(0, lastSlash);
         Path keyPath = Paths.get(executingPath + "/api_key.txt");
@@ -95,12 +96,5 @@ public class Riot{
             return;
         }
         RIOT_API_KEY = new String(pathBytes);
-    }
-    private static String convertURLToString(URL url){
-        String str = url.getPath();
-        if(str.charAt(0) == '/'){
-            str = str.substring(1);
-        }
-        return str.replace("%20"," ");
     }
 }

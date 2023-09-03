@@ -2,11 +2,10 @@ package lol.champions;
 
 import lol.requests.Option;
 import lol.requests.SimpleResponse;
+import lol.utils.PathUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -17,6 +16,8 @@ public class Champions{
     private static final HashMap<String, Integer> nameToId = new HashMap<>(256);
 
     private static final HashMap<Integer, Role[]> idToRoles = new HashMap<>(256);
+    private static final String CHAMPIONS_FILE = "champions.txt";
+    private static final String ROLES_FILE = "roles.txt";
     private static boolean isJar;
     public Champions(){
     }
@@ -32,24 +33,16 @@ public class Champions{
 
     private static void loadChampions() throws IOException{
         if(isJar){
-            InputStream is = Champions.class.getResourceAsStream("/champions.txt");
+            InputStream is = Champions.class.getResourceAsStream('/' + CHAMPIONS_FILE);
             String champs = SimpleResponse.streamToString(is);
             List<String> lines = readAllLines(champs);
             readChampionsFromList(lines);
         }else{
-            URL url = Champions.class.getResource("/champions.txt");
+            URL url = Champions.class.getResource('/' + CHAMPIONS_FILE);
             if(url == null)
                 return;
 
-            URI uri;
-            try{
-                uri = url.toURI();
-            }catch (URISyntaxException e){
-                e.printStackTrace();
-                return;
-            }
-
-            String path = uri.getPath().substring(1);
+            String path = PathUtils.convertURLToString(url);
             readChampionsFromList(Files.readAllLines(Paths.get(path)));
         }
     }
@@ -65,24 +58,17 @@ public class Champions{
     }
     private static void loadRoles() throws IOException{
         if(isJar){
-            InputStream is = Champions.class.getResourceAsStream("/roles.txt");
+            InputStream is = Champions.class.getResourceAsStream('/' + ROLES_FILE);
             String roles = SimpleResponse.streamToString(is);
             List<String> lines = readAllLines(roles);
             readRolesFromList(lines);
         }else{
-            URL url = Champions.class.getResource("/roles.txt");
+            URL url = Champions.class.getResource('/' + ROLES_FILE);
             if(url == null)
                 return;
 
-            URI uri;
-            try{
-                uri = url.toURI();
-            }catch (URISyntaxException e){
-                e.printStackTrace();
-                return;
-            }
-            String noPrefixPath = uri.getPath().substring(1);
-            readRolesFromList(Files.readAllLines(Paths.get(noPrefixPath)));
+            String path = PathUtils.convertURLToString(url);
+            readRolesFromList(Files.readAllLines(Paths.get(path)));
         }
     }
     private static void readRolesFromList(List<String> lines){
